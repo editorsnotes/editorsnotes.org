@@ -149,8 +149,12 @@ def upload_tar_from_git():
 
 def upload_local_settings():
     "Upload the appropriate local settings file."
-    require('release', provided_by=ENVS)
-    put('deploy/settings-{host}.py'.format(**env), 
+    require('host', 'release', provided_by=ENVS)
+    settings_file = 'upload/settings-{host}.py'.format(**env)
+    if not os.path.exists(settings_file):
+        abort(red('Put the settings for {} at {}'.format(
+            env['host'], settings_file)))
+    put(settings_file,
         '{project_path}/releases/{release}/{project_name}/settings_local.py'.format(**env))
 
 def upload_deploy_info():
@@ -194,11 +198,15 @@ def symlink_system_packages():
 def install_site():
     "Add the virtualhost file to apache."
     require('release', provided_by=ENVS)
-    put('deploy/vhost-{host}.conf'.format(**env),
-        '{project_path}/vhost-{host}.conf.tmp'.format(**env))
+    vhost_file = 'upload/vhost-{host}.conf'.format(**env)
+    if not os.path.exists(vhost_file):
+        abort(red('Put the vhost config for {} at {}'.format(
+            env['host'], vhost_file)))
+    put('django.wsgi', '{project_path}/releases/{release}'.format(**env))
+    put(vhost_file, '{project_path}/vhost-{host}.conf.tmp'.format(**env))
     with cd(env['project_path']):
-        sudo(('mv -f vhost-{host}.conf.tmp '
-              '{vhosts_path}/vhost-{host}.conf').format(**env), pty=True)
+        sudo('mv -f vhost-{host}.conf.tmp {vhosts_path}/vhost-{host}.conf'.format(
+            **env), pty=True)
 
 def symlink_current_release():
     "Symlink our current release."
