@@ -39,6 +39,8 @@ def pro():
     env.vhosts_path = '/etc/httpd/sites.d'
     env.python = '/usr/bin/python2.7'
 
+# Create custom environments in local/fab.py, in the same style as above
+ENVS = [beta, pro, 'local.{customenv}']
 
 #########
 # Tasks #
@@ -46,7 +48,7 @@ def pro():
 @task
 def test_remote():
     "Run the test suite remotely."
-    require('hosts', 'project_path', provided_by=[local.dev])
+    require('hosts', 'project_path', provided_by=ENVS)
     with cd('{project_path}/releases/current'.format(**env)):
         run('../../bin/python manage.py test')
     
@@ -55,7 +57,7 @@ def setup():
     """
     Setup a new virtualenv & create project dirs, then run a full deployment.
     """
-    require('hosts', 'project_path', provided_by=[dev])
+    require('hosts', 'project_path', provided_by=ENVS)
     run('mkdir -p {project_path}'.format(**env))
     with cd(env.project_path):
         run('virtualenv -p {python} --no-site-packages .'.format(**env))
@@ -71,7 +73,7 @@ def deploy():
     Download the newest version of editorsnotes, install requirements in the
     virtualenv, upload the virtual host, and restart the webserver.
     """
-    require('hosts', 'project_path', provided_by=[dev])
+    require('hosts', 'project_path', provided_by=ENVS)
     env.release = time.strftime('%Y%m%d%H%M%S')
     upload_tar_from_git()
     upload_local_settings()
@@ -90,7 +92,7 @@ def deploy():
 @task
 def deploy_version(version):
     "Specify a specific version to be made live."
-    require('hosts', 'project_path', provided_by=[dev])
+    require('hosts', 'project_path', provided_by=ENVS)
     env.version = version
     with cd(env.project_path):
         run('rm releases/previous; mv releases/current releases/previous')
@@ -105,7 +107,7 @@ def rollback():
     Limited rollback capability. Simply loads the previously current
     version of the code. Rolling back again will swap between the two.
     """
-    require('hosts', 'project_path', provided_by=[dev])
+    require('hosts', 'project_path', provided_by=ENVS)
     with cd(env.project_path):
         run('mv releases/current releases/_previous;')
         run('mv releases/previous releases/current;')
@@ -115,7 +117,7 @@ def rollback():
 @task
 def clean():
     "Clean out old packages and releases."
-    require('hosts', 'project_path', provided_by=[dev])
+    require('hosts', 'project_path', provided_by=ENVS)
     msg = 'Are you sure you want to delete everything on {host}?'
     if not confirm(msg.format(**env), default=False):
         return
@@ -130,7 +132,7 @@ def clean():
 ###########
 def upload_tar_from_git():
     "Create an archive from the current Git branch and upload it."
-    require('release', provided_by=[deploy, setup])
+    require('release', provided_by=ENVS)
     local('git archive --format=tar HEAD | gzip > %(release)s.tar.gz' % env)
     run('mkdir -p %(project_path)s/releases/%(release)s' % env)
     put('%(release)s.tar.gz' % env, '%(project_path)s/packages/' % env)
@@ -139,13 +141,13 @@ def upload_tar_from_git():
 
 def upload_local_settings():
     "Upload the appropriate local settings file."
-    require('release', provided_by=[deploy, setup])
+    require('release', provided_by=ENVS)
     put('deploy/settings-{host}.py'.format(**env), 
         '{project_path}/releases/{release}/{project_name}/settings_local.py'.format(**env))
 
 def upload_deploy_info():
     "Upload information about the version and time of deployment."
-    require('release', provided_by=[deploy, setup])
+    require('release', provided_by=ENVS)
     with open('%(project_name)s/templates/version.txt' % env, 'wb') as f:
         call(['git', 'rev-parse', 'HEAD'], stdout=f)
     with open('%(project_name)s/templates/time-deployed.txt' % env, 'wb') as f:
@@ -156,14 +158,14 @@ def upload_deploy_info():
 
 def install_requirements():
     "Install the required packages from the requirements file using pip"
-    require('release', provided_by=[deploy, setup])
+    require('release', provided_by=ENVS)
     run('export SAVED_PIP_VIRTUALENV_BASE=$PIP_VIRTUALENV_BASE; unset PIP_VIRTUALENV_BASE; ' +
         'cd %(project_path)s; ./bin/pip install -E . -r ./releases/%(release)s/requirements.txt; ' % env +
         'export PIP_VIRTUALENV_BASE=$SAVED_PIP_VIRTUALENV_BASE; unset SAVED_PIP_VIRTUALENV_BASE')
 
 def symlink_system_packages():
     "Create symlinks to system site-packages."
-    require('python', 'project_path', provided_by=[dev])
+    require('python', 'project_path', provided_by=ENVS)
     missing = []
     requirements = (
         req.rstrip().replace('# symlink: ', '')
@@ -183,7 +185,7 @@ def symlink_system_packages():
 
 def install_site():
     "Add the virtualhost file to apache."
-    require('release', provided_by=[deploy, setup])
+    require('release', provided_by=ENVS)
     put('deploy/vhost-{host}.conf'.format(**env),
         '{project_path}/vhost-{host}.conf.tmp'.format(**env))
     with cd(env['project_path']):
@@ -192,21 +194,21 @@ def install_site():
 
 def symlink_current_release():
     "Symlink our current release."
-    require('release', provided_by=[deploy, setup])
+    require('release', provided_by=ENVS)
     with cd(env.project_path):
         run('rm releases/previous; mv releases/current releases/previous;')
         run('ln -s {release} releases/current'.format(**env))
     
 def migrate():
     "Update the database"
-    require('hosts', 'project_path', provided_by=[dev])
+    require('hosts', 'project_path', provided_by=ENVS)
     with cd('{project_path}/releases/current'.format(**env)):
         run('../../bin/python manage.py syncdb --noinput')
         run('../../bin/python manage.py migrate --noinput')
 
 def collect_static():
     "Collect static files"
-    require('hosts', 'project_path', provided_by=[dev])
+    require('hosts', 'project_path', provided_by=ENVS)
     with cd('{project_path}/releases/current' % env):
         run('../../bin/python manage.py collectstatic --noinput')
     
