@@ -160,13 +160,19 @@ def upload_local_settings():
 def upload_deploy_info():
     "Upload information about the version and time of deployment."
     require('release', provided_by=ENVS)
-    with open('%(project_name)s/templates/version.txt' % env, 'wb') as f:
+
+    version_file = os.path.join(env.TMP_DIR, 'version.txt')
+    time_file = os.path.join(env.TMP_DIR, 'time-deployed.txt')
+
+    with lcd(os.getenv('EDITORSNOTES_GIT')), open(version_file, 'wb') as f:
         call(['git', 'rev-parse', 'HEAD'], stdout=f)
-    with open('%(project_name)s/templates/time-deployed.txt' % env, 'wb') as f:
+
+    with open(time_file, 'wb') as f:
         f.write(datetime.now().strftime('%Y-%m-%d %H:%M'))
-    for filename in ['version.txt', 'time-deployed.txt']:
-        put(('%(project_name)s/templates/' % env) + filename,
-            ('%(project_path)s/releases/%(release)s/%(project_name)s/templates/' % env) + filename)
+
+    dest = '{project_path}/releases/{release}/{project_name}/templates'.format(**env)
+    put(version_file, dest)
+    put(time_file, dest)
 
 def install_requirements():
     "Install the required packages from the requirements file using pip"
@@ -179,9 +185,10 @@ def symlink_system_packages():
     "Create symlinks to system site-packages."
     require('python', 'project_path', provided_by=ENVS)
     missing = []
+    req_file = os.path.join(os.getenv('EDITORSNOTES_GIT'), 'requirements.txt')
     requirements = (
         req.rstrip().replace('# symlink: ', '')
-        for req in open('requirements.txt', 'r')
+        for req in open(req_file, 'r')
         if req.startswith('# symlink: ')
     )
     for req in requirements:
@@ -225,7 +232,7 @@ def migrate():
 def collect_static():
     "Collect static files"
     require('hosts', 'project_path', provided_by=ENVS)
-    with cd('{project_path}/releases/current' % env):
+    with cd('{project_path}/releases/current'.format(**env)):
         run('../../bin/python manage.py collectstatic --noinput')
     
 def restart_webserver():
