@@ -76,6 +76,8 @@ def deploy():
     """
     require('hosts', 'project_path', provided_by=ENVS)
     env.release = time.strftime('%Y%m%d%H%M%S')
+    if not os.getenv('EDITORSNOTES_GIT'):
+        abort(red('Create environment variable EDITORSNOTES_GIT containing a path to your editorsnotes git repository.'))
     upload_tar_from_git()
     upload_local_settings()
     upload_deploy_info()
