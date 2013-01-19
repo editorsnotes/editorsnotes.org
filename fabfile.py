@@ -23,8 +23,7 @@ except ImportError:
 ################
 env.project_name = 'editorsnotes'
 env.release = time.strftime('%Y%m%d%H%M%S')
-env.TMP_DIR = os.path.join(os.path.dirname(env['real_fabfile']), 'upload', 'tmp')
-local('mkdir -p {}'.format(env.TMP_DIR))
+env.TMP_DIR = os.path.join(os.path.dirname(env.real_fabfile), 'tmp')
 
 @task
 def beta():
@@ -80,6 +79,7 @@ def deploy():
     require('hosts', 'project_path', provided_by=ENVS)
     if not os.getenv('EDITORSNOTES_GIT'):
         abort(red('Create environment variable EDITORSNOTES_GIT containing a path to your editorsnotes git repository.'))
+    local('mkdir -p {}'.format(env.TMP_DIR))
     upload_tar_from_git()
     upload_local_settings()
     upload_deploy_info()
@@ -92,7 +92,8 @@ def deploy():
     restart_webserver()
     time.sleep(2)
     local('{} http://{}/'.format(
-        'xdg-open' if 'linux' in sys.platform else 'open', env['host']))
+        'xdg-open' if 'linux' in sys.platform else 'open', env.host))
+    local('rmdir --ignore-fail-on-non-empty {TMP_DIR}'.format(**env))
     
 @task
 def deploy_version(version):
@@ -150,10 +151,10 @@ def upload_tar_from_git():
 def upload_local_settings():
     "Upload the appropriate local settings file."
     require('host', 'release', provided_by=ENVS)
-    settings_file = 'upload/settings-{host}.py'.format(**env)
+    settings_file = 'settings/settings-{host}.py'.format(**env)
     if not os.path.exists(settings_file):
         abort(red('Put the settings for {} at {}'.format(
-            env['host'], settings_file)))
+            env.host, settings_file)))
     put(settings_file,
         '{project_path}/releases/{release}/{project_name}/settings_local.py'.format(**env))
 
@@ -173,6 +174,8 @@ def upload_deploy_info():
     dest = '{project_path}/releases/{release}/{project_name}/templates'.format(**env)
     put(version_file, dest)
     put(time_file, dest)
+    local('rm {}'.format(version_file))
+    local('rm {}'.format(time_file))
 
 def install_requirements():
     "Install the required packages from the requirements file using pip"
@@ -204,13 +207,13 @@ def symlink_system_packages():
 def install_site():
     "Add the virtualhost file to apache."
     require('release', provided_by=ENVS)
-    vhost_file = 'upload/vhost-{host}.conf'.format(**env)
+    vhost_file = 'vhosts/vhost-{host}.conf'.format(**env)
     if not os.path.exists(vhost_file):
         abort(red('Put the vhost config for {} at {}'.format(
-            env['host'], vhost_file)))
+            env.host, vhost_file)))
     put('django.wsgi', '{project_path}/releases/{release}'.format(**env))
     put(vhost_file, '{project_path}/vhost-{host}.conf.tmp'.format(**env))
-    with cd(env['project_path']):
+    with cd(env.project_path):
         sudo('mv -f vhost-{host}.conf.tmp {vhosts_path}/vhost-{host}.conf'.format(
             **env), pty=True)
 

@@ -1,8 +1,12 @@
 *.swp
 *.pyc
 
+tmp/*
+
 fabfile_local.py
 
-upload/*
-!upload/vhost-beta.editorsnotes.org.conf
-!upload/vhost-editorsnotes.org.conf
+settings/settings-*.py
+
+vhosts/vhost-*
+!vhosts/vhost-beta.editorsnotes.org.conf
+!vhosts/vhost-editorsnotes.org.conf
