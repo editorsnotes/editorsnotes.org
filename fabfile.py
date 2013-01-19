@@ -22,6 +22,9 @@ except ImportError:
 # Environments #
 ################
 env.project_name = 'editorsnotes'
+env.release = time.strftime('%Y%m%d%H%M%S')
+env.TMP_DIR = os.path.join(os.path.dirname(env['real_fabfile']), 'upload', 'tmp')
+local('mkdir -p {}'.format(env.TMP_DIR))
 
 @task
 def beta():
@@ -75,7 +78,6 @@ def deploy():
     virtualenv, upload the virtual host, and restart the webserver.
     """
     require('hosts', 'project_path', provided_by=ENVS)
-    env.release = time.strftime('%Y%m%d%H%M%S')
     if not os.getenv('EDITORSNOTES_GIT'):
         abort(red('Create environment variable EDITORSNOTES_GIT containing a path to your editorsnotes git repository.'))
     upload_tar_from_git()
