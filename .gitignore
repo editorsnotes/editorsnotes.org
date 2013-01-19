@@ -1,0 +1,4 @@
+*.swp
+*.pyc
+local/*
+!local/__init__.py
