@@ -137,12 +137,15 @@ def clean():
 ###########
 def upload_tar_from_git():
     "Create an archive from the current Git branch and upload it."
-    require('release', provided_by=ENVS)
-    local('git archive --format=tar HEAD | gzip > %(release)s.tar.gz' % env)
-    run('mkdir -p %(project_path)s/releases/%(release)s' % env)
-    put('%(release)s.tar.gz' % env, '%(project_path)s/packages/' % env)
-    run('cd %(project_path)s/releases/%(release)s && tar zxf ../../packages/%(release)s.tar.gz' % env)
-    local('rm %(release)s.tar.gz' % env)
+    require('project_path', 'release', provided_by=ENVS)
+    with lcd(os.getenv('EDITORSNOTES_GIT')):
+        local('git archive --format=tar HEAD | gzip > {TMP_DIR}/{release}.tar.gz'.format(**env))
+    run('mkdir -p {project_path}/releases/{release}'.format(**env))
+    put('{TMP_DIR}/{release}.tar.gz'.format(**env),
+        '{project_path}/packages/'.format(**env))
+    with cd('{project_path}/releases/{release}'.format(**env)):
+        run('tar zxf ../../packages/{release}.tar.gz'.format(**env))
+    local('rm {TMP_DIR}/{release}.tar.gz'.format(**env))
 
 def upload_local_settings():
     "Upload the appropriate local settings file."
