@@ -177,9 +177,8 @@ def upload_deploy_info():
 def install_requirements():
     "Install the required packages from the requirements file using pip"
     require('release', provided_by=ENVS)
-    run('export SAVED_PIP_VIRTUALENV_BASE=$PIP_VIRTUALENV_BASE; unset PIP_VIRTUALENV_BASE; ' +
-        'cd %(project_path)s; ./bin/pip install -E . -r ./releases/%(release)s/requirements.txt; ' % env +
-        'export PIP_VIRTUALENV_BASE=$SAVED_PIP_VIRTUALENV_BASE; unset SAVED_PIP_VIRTUALENV_BASE')
+    with cd('{project_path}'.format(**env)):
+        run('./bin/pip install -r ./releases/{release}/requirements.txt'.format(**env))
 
 def symlink_system_packages():
     "Create symlinks to system site-packages."
