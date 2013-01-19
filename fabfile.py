@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from fabric.api import *
+from fabric.colors import red
 from fabric.contrib.console import confirm
-from fabric.contrib.files import exists
 from datetime import datetime
 from subprocess import call
-from time import sleep
 import os
 import sys
+import time
 
 #################
 # Local fabfile #
@@ -21,11 +21,13 @@ except ImportError:
 ################
 # Environments #
 ################
+env.project_name = 'editorsnotes'
+
 @task
 def beta():
     "Use the beta-testing webserver."
     env.hosts = ['beta.editorsnotes.org']
-    env.project_path = '/db/projects/%(project_name)s-beta' % env
+    env.project_path = '/db/projects/{project_name}-beta'.format(**env)
     env.vhosts_path = '/etc/httpd/sites.d'
     env.python = '/usr/bin/python2.7'
 
@@ -33,7 +35,7 @@ def beta():
 def pro():
     "Use the production webserver."
     env.hosts = ['editorsnotes.org']
-    env.project_path = '/db/projects/%(project_name)s' % env
+    env.project_path = '/db/projects/{project_name}'.format(**env)
     env.vhosts_path = '/etc/httpd/sites.d'
     env.python = '/usr/bin/python2.7'
 
@@ -44,32 +46,32 @@ def pro():
 @task
 def test_remote():
     "Run the test suite remotely."
-    require('hosts', 'project_path', provided_by=[dev])
-    run('cd %(project_path)s/releases/current;  ../../bin/python manage.py test' % env)
+    require('hosts', 'project_path', provided_by=[local.dev])
+    with cd('{project_path}/releases/current'.format(**env)):
+        run('../../bin/python manage.py test')
     
 @task
 def setup():
     """
-    Setup a fresh virtualenv as well as a few useful directories, then
-    run a full deployment.
+    Setup a new virtualenv & create project dirs, then run a full deployment.
     """
     require('hosts', 'project_path', provided_by=[dev])
-    run('mkdir -p %(project_path)s' % env)
+    run('mkdir -p {project_path}'.format(**env))
     with cd(env.project_path):
-        run('virtualenv -p %(python)s --no-site-packages .' % env)
-        run('mkdir -p logs releases shared packages' % env)
+        run('virtualenv -p {python} --no-site-packages .'.format(**env))
+        run('mkdir -p logs releases shared packages')
         run('cd releases; touch none; ln -sf none current; ln -sf none previous')
     deploy()
     
 @task
 def deploy():
     """
-    Deploy the latest version of the site to the servers, install any
-    required third party modules, install the virtual host and then
-    restart the webserver.
+    Deploy the latest version of the site.
+
+    Download the newest version of editorsnotes, install requirements in the
+    virtualenv, upload the virtual host, and restart the webserver.
     """
     require('hosts', 'project_path', provided_by=[dev])
-    import time
     env.release = time.strftime('%Y%m%d%H%M%S')
     upload_tar_from_git()
     upload_local_settings()
@@ -81,9 +83,9 @@ def deploy():
     migrate()
     collect_static()
     restart_webserver()
-    sleep(2)
-    local('%s http://%s/' % (
-        'xdg-open' if sys.platform.startswith('linux') else 'open', env['host']))
+    time.sleep(2)
+    local('{} http://{}/'.format(
+        'xdg-open' if 'linux' in sys.platform else 'open', env['host']))
     
 @task
 def deploy_version(version):
@@ -92,12 +94,14 @@ def deploy_version(version):
     env.version = version
     with cd(env.project_path):
         run('rm releases/previous; mv releases/current releases/previous')
-        run('ln -s %(version)s releases/current' % env)
+        run('ln -s {version} releases/current'.format(**env))
     restart_webserver()
     
 @task
 def rollback():
     """
+    Load the previously current version of the code.
+
     Limited rollback capability. Simply loads the previously current
     version of the code. Rolling back again will swap between the two.
     """
@@ -112,16 +116,18 @@ def rollback():
 def clean():
     "Clean out old packages and releases."
     require('hosts', 'project_path', provided_by=[dev])
-    if (confirm('Are you sure you want to delete everything on %(host)s?' % env, 
-                default=False)):
-        with cd(env.project_path):
-            run('rm -rf packages; rm -rf releases')
-            run('mkdir -p packages; mkdir -p releases')
-            run('cd releases; touch none; ln -sf none current; ln -sf none previous')
+    msg = 'Are you sure you want to delete everything on {host}?'
+    if not confirm(msg.format(**env), default=False):
+        return
+    with cd(env.project_path):
+        run('rm -rf packages; rm -rf releases')
+        run('mkdir -p packages; mkdir -p releases')
+        run('cd releases; touch none; ln -sf none current; ln -sf none previous')
     
 
-# Helpers. These are called by other functions rather than directly.
-
+###########
+# Helpers #
+###########
 def upload_tar_from_git():
     "Create an archive from the current Git branch and upload it."
     require('release', provided_by=[deploy, setup])
@@ -134,8 +140,8 @@ def upload_tar_from_git():
 def upload_local_settings():
     "Upload the appropriate local settings file."
     require('release', provided_by=[deploy, setup])
-    put('deploy/settings-%(host)s.py' % env, 
-        '%(project_path)s/releases/%(release)s/%(project_name)s/settings_local.py' % env)
+    put('deploy/settings-{host}.py'.format(**env), 
+        '{project_path}/releases/{release}/{project_name}/settings_local.py'.format(**env))
 
 def upload_deploy_info():
     "Upload information about the version and time of deployment."
@@ -159,46 +165,49 @@ def symlink_system_packages():
     "Create symlinks to system site-packages."
     require('python', 'project_path', provided_by=[dev])
     missing = []
-    requirements = (req.rstrip().replace('# symlink: ', '')
-                    for req in open('requirements.txt', 'r')
-                    if req.startswith('# symlink: '))
+    requirements = (
+        req.rstrip().replace('# symlink: ', '')
+        for req in open('requirements.txt', 'r')
+        if req.startswith('# symlink: ')
+    )
     for req in requirements:
-        req_file = run('%s -c "import os, %s; print os.path.dirname(%s.__file__)"' % (
-            env.python, req, req), warn_only=True, quiet=True)
+        cmd = '{0} -c "import os, {1}; print os.path.dirname({1}.__file__)"'
+        req_file = run(cmd.format(env.python, req), warn_only=True, quiet=True)
         if req_file.failed:
             missing.append(req)
             continue
         with cd(os.path.join(env.project_path, 'lib', 'python2.7', 'site-packages')):
-            run('ln -f -s %s' % req_file)
+            run('ln -f -s {}'.format(req_file))
     if missing:
-        abort('Missing python packages: %s' % ', '.join(missing))
+        abort(red('Missing python packages: {}'.format(', '.join(missing))))
 
 def install_site():
     "Add the virtualhost file to apache."
     require('release', provided_by=[deploy, setup])
-    put('deploy/vhost-%(host)s.conf' % env,
-        '%(project_path)s/vhost-%(host)s.conf.tmp' % env)
-    sudo('cd %(project_path)s; mv -f vhost-%(host)s.conf.tmp %(vhosts_path)s/vhost-%(host)s.conf' % env, pty=True)
+    put('deploy/vhost-{host}.conf'.format(**env),
+        '{project_path}/vhost-{host}.conf.tmp'.format(**env))
+    with cd(env['project_path']):
+        sudo(('mv -f vhost-{host}.conf.tmp '
+              '{vhosts_path}/vhost-{host}.conf').format(**env), pty=True)
 
 def symlink_current_release():
     "Symlink our current release."
     require('release', provided_by=[deploy, setup])
     with cd(env.project_path):
         run('rm releases/previous; mv releases/current releases/previous;')
-        run('ln -s %(release)s releases/current' % env)
+        run('ln -s {release} releases/current'.format(**env))
     
 def migrate():
     "Update the database"
     require('hosts', 'project_path', provided_by=[dev])
-    with cd('%(project_path)s/releases/current' % env):
+    with cd('{project_path}/releases/current'.format(**env)):
         run('../../bin/python manage.py syncdb --noinput')
-        for app in [ 'main', 'djotero', 'refine', 'reversion' ]:
-            run('../../bin/python manage.py migrate --noinput %s' % app)
+        run('../../bin/python manage.py migrate --noinput')
 
 def collect_static():
     "Collect static files"
     require('hosts', 'project_path', provided_by=[dev])
-    with cd('%(project_path)s/releases/current' % env):
+    with cd('{project_path}/releases/current' % env):
         run('../../bin/python manage.py collectstatic --noinput')
     
 def restart_webserver():
