@@ -13,7 +13,7 @@ import time
 # Local fabfile #
 #################
 try:
-    from local import fab as local
+    from fabfile_local import *
 except ImportError:
     pass
 
@@ -39,8 +39,9 @@ def pro():
     env.vhosts_path = '/etc/httpd/sites.d'
     env.python = '/usr/bin/python2.7'
 
-# Create custom environments in local/fab.py, in the same style as above
-ENVS = [beta, pro, 'local.{customenv}']
+# Create custom environments in fabfile_local.py, in the same style as above
+ENVS = [beta, pro, 'Custom host defined in fabfile_local.py']
+
 
 #########
 # Tasks #
