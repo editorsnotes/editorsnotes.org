@@ -1,4 +1,9 @@
 *.swp
 *.pyc
+
 local/*
 !local/__init__.py
+
+upload/*
+!upload/vhost-beta.editorsnotes.org.conf
+!upload/vhost-editorsnotes.org.conf
