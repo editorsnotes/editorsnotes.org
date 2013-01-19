@@ -1,18 +1,26 @@
 # -*- coding: utf-8 -*-
 
-import os
-import sys
-from time import sleep
 from fabric.api import *
 from fabric.contrib.console import confirm
 from fabric.contrib.files import exists
-from fabric.decorators import task
-from fabric.utils import abort
-from subprocess import call
 from datetime import datetime
+from subprocess import call
+from time import sleep
+import os
+import sys
 
-# Environments
+#################
+# Local fabfile #
+#################
+try:
+    from local import fab as local
+except ImportError:
+    pass
 
+
+################
+# Environments #
+################
 @task
 def beta():
     "Use the beta-testing webserver."
@@ -29,8 +37,10 @@ def pro():
     env.vhosts_path = '/etc/httpd/sites.d'
     env.python = '/usr/bin/python2.7'
 
-# Tasks
 
+#########
+# Tasks #
+#########
 @task
 def test_remote():
     "Run the test suite remotely."
