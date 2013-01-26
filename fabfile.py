@@ -85,15 +85,16 @@ def deploy():
     upload_deploy_info()
     symlink_system_packages()
     install_requirements()
+    install_nodejs_lessc()
     install_site()
     symlink_current_release()
     migrate()
     collect_static()
     restart_webserver()
     time.sleep(2)
+    local('rmdir --ignore-fail-on-non-empty {TMP_DIR}'.format(**env))
     local('{} http://{}/'.format(
         'xdg-open' if 'linux' in sys.platform else 'open', env.host))
-    local('rmdir --ignore-fail-on-non-empty {TMP_DIR}'.format(**env))
     
 @task
 def deploy_version(version):
@@ -203,6 +204,25 @@ def symlink_system_packages():
             run('ln -f -s {}'.format(req_file))
     if missing:
         abort(red('Missing python packages: {}'.format(', '.join(missing))))
+
+def install_nodejs_lessc():
+    NODE_VERSION = 'v0.8.18'
+    PLATFORM = '64' if run('uname -m', quiet=True).endswith('64') else '86'
+    pkg = 'node-{}-linux-x{}'.format(NODE_VERSION, PLATFORM)
+    tarball = 'http://nodejs.org/dist/{}/{}.tar.gz'.format(NODE_VERSION, pkg)
+
+    if os.path.exists('{}/lib/{}'.format(env.project_path, pkg)):
+        print 'node.js {} already installed'.format(NODE_VERSION)
+    else:
+        with cd(os.path.join(env.project_path, 'lib')):
+            run('wget {}'.format(tarball))
+            run('tar xzf {0}.tar.gz && rm {0}.tar.gz'.format(pkg))
+
+    with cd(os.path.join(env.project_path, 'lib')):
+        run('export NPM_CONFIG_PREFIX="{0}" && ./{0}/bin/npm install -g less'.format(pkg))
+
+    with cd(os.path.join(env.project_path, 'bin')):
+        run('ln -fs ../lib/{}/bin/lessc'.format(pkg))
 
 def install_site():
     "Add the virtualhost file to apache."
