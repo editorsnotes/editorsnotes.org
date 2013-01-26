@@ -3,6 +3,7 @@
 from fabric.api import *
 from fabric.colors import red
 from fabric.contrib.console import confirm
+from fabric.contrib.files import exists
 from datetime import datetime
 from subprocess import call
 import os
@@ -211,7 +212,7 @@ def install_nodejs_lessc():
     pkg = 'node-{}-linux-x{}'.format(NODE_VERSION, PLATFORM)
     tarball = 'http://nodejs.org/dist/{}/{}.tar.gz'.format(NODE_VERSION, pkg)
 
-    if os.path.exists('{}/lib/{}'.format(env.project_path, pkg)):
+    if exists('{}/lib/{}'.format(env.project_path, pkg)):
         print 'node.js {} already installed'.format(NODE_VERSION)
     else:
         with cd(os.path.join(env.project_path, 'lib')):
@@ -220,9 +221,7 @@ def install_nodejs_lessc():
 
     with cd(os.path.join(env.project_path, 'lib')):
         run('export NPM_CONFIG_PREFIX="{0}" && ./{0}/bin/npm install -g less'.format(pkg))
-
-    with cd(os.path.join(env.project_path, 'bin')):
-        run('ln -fs ../lib/{}/bin/lessc'.format(pkg))
+        run('ln -fs {} node'.format(pkg))
 
 def install_site():
     "Add the virtualhost file to apache."
