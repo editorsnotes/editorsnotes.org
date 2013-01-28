@@ -86,7 +86,7 @@ def deploy():
     upload_deploy_info()
     symlink_system_packages()
     install_requirements()
-    install_nodejs_lessc()
+    install_nodejs()
     install_site()
     symlink_current_release()
     migrate()
@@ -206,7 +206,7 @@ def symlink_system_packages():
     if missing:
         abort(red('Missing python packages: {}'.format(', '.join(missing))))
 
-def install_nodejs_lessc():
+def install_nodejs():
     NODE_VERSION = 'v0.8.18'
     PLATFORM = '64' if run('uname -m', quiet=True).endswith('64') else '86'
     pkg = 'node-{}-linux-x{}'.format(NODE_VERSION, PLATFORM)
@@ -221,6 +221,7 @@ def install_nodejs_lessc():
 
     with cd(os.path.join(env.project_path, 'lib')):
         run('export NPM_CONFIG_PREFIX="{0}" && ./{0}/bin/npm install -g less'.format(pkg))
+        run('export NPM_CONFIG_PREFIX="{0}" && ./{0}/bin/npm install -g jsmin'.format(pkg))
         run('ln -fs {} node'.format(pkg))
 
 def install_site():
