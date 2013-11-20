@@ -104,6 +104,7 @@ def deploy(version='HEAD'):
     symlink_system_packages()
     install_nodejs()
     install_vhosts()
+    install_wsgi()
     symlink_current_release()
     collect_static()
     restart_webserver()
@@ -165,11 +166,13 @@ def install_vhosts():
     if not os.path.exists(vhost_file):
         abort(red('Put the vhost config for {} at {}'.format(
             env.host, vhost_file)))
-    put('django.wsgi', '{project_path}/releases/{release}'.format(**env))
     put(vhost_file, '{project_path}/vhost-{host}.conf.tmp'.format(**env))
     with cd(env.project_path):
         sudo('mv -f vhost-{host}.conf.tmp {vhosts_path}/vhost-{host}.conf'.format(
             **env), pty=True)
+
+def install_wsgi():
+    put('django.wsgi', '{project_path}/releases/{release}'.format(**env))
 
 
 
@@ -186,7 +189,7 @@ MAINTENANCE_TEXT = """
 def take_offline():
     "Take the site down for maintanence, redirecting all requests to a notification."
     require('project_path', provided_by=ENVS)
-    maintenance_file_path = '{TMP_DIR}/maintenance.html'.format(**env)
+    maintenance_file_path = '{TMP_DIR}/offline.html'.format(**env)
     with open(maintenance_file_path, 'w') as outfile:
         outfile.write(MAINTENANCE_TEXT)
     put(maintenance_file_path, env.project_path)
@@ -197,7 +200,7 @@ def take_offline():
 @task
 def put_back_online():
     require('project_path', provided_by=ENVS)
-    maintenance_file_path = '{project_path}/maintenance.html'.format(**env)
+    maintenance_file_path = '{project_path}/offline.html'.format(**env)
     if exists(maintenance_file_path):
         run('rm {}'.format(maintenance_file_path))
         restart_webserver()
@@ -323,6 +326,7 @@ def collect_static():
     with cd('{project_path}/releases/current'.format(**env)):
         run('../../bin/python manage.py collectstatic --noinput')
     
+@task
 def restart_webserver():
     "Restart the web server."
     sudo('apachectl restart', pty=True)
