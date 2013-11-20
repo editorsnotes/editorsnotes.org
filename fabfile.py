@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from fabric.api import *
-from fabric.colors import red
+from fabric.colors import red, green
 from fabric.contrib.console import confirm
 from fabric.contrib.files import exists
 from datetime import datetime
@@ -70,7 +70,7 @@ def setup():
     deploy()
     
 @task
-def deploy():
+def deploy(version='HEAD'):
     """
     Deploy the latest version of the site.
 
@@ -80,8 +80,24 @@ def deploy():
     require('hosts', 'project_path', provided_by=ENVS)
     if not os.getenv('EDITORSNOTES_GIT'):
         abort(red('Create environment variable EDITORSNOTES_GIT containing a path to your editorsnotes git repository.'))
+
+    git_dir = os.getenv('EDITORSNOTES_GIT')
+    if version != 'HEAD':
+        ensure_branch_exists(version, git_dir)
+
+    deployment_src = (
+        'git branch/tag `{}`'.format(version)
+        if version != 'HEAD'
+        else 'HEAD of local git repository ({})'.format(git_dir))
+    print green('\nAbout to deploy {} to {}'.format(deployment_src,
+                                                    '|'.join(env.hosts)))
+
+    msg = 'Continue?'
+    if not confirm(msg, default=False):
+        return
+
     local('mkdir -p {}'.format(env.TMP_DIR))
-    upload_tar_from_git()
+    upload_tar_from_git(version)
     upload_local_settings()
     upload_deploy_info()
     install_requirements()
@@ -89,9 +105,16 @@ def deploy():
     install_nodejs()
     install_vhosts()
     symlink_current_release()
-    migrate()
     collect_static()
     restart_webserver()
+
+@task
+def full_deploy(version='HEAD'):
+    """
+    Deploy the site, migrate the database, and open in a web browser.
+    """
+    deploy(version)
+    migrate()
     time.sleep(2)
     local('rmdir --ignore-fail-on-non-empty {TMP_DIR}'.format(**env))
     local('{} http://{}/'.format(
@@ -183,11 +206,21 @@ def put_back_online():
 ###########
 # Helpers #
 ###########
-def upload_tar_from_git():
+def ensure_branch_exists(branch, git_dir):
+    with lcd(git_dir):
+        with warn_only():
+            show_ref = local('git show-ref --heads --tags {}'.format(branch), capture=True)
+    if not show_ref:
+        abort(red('Could not find local head or tag `{}`. '
+                  'Do you need to fetch it first?'.format(branch)))
+
+def upload_tar_from_git(version='HEAD'):
     "Create an archive from the current Git branch and upload it."
     require('project_path', 'release', provided_by=ENVS)
     with lcd(os.getenv('EDITORSNOTES_GIT')):
-        local('git archive --format=tar HEAD | gzip > {TMP_DIR}/{release}.tar.gz'.format(**env))
+        local('git archive --format=tar {_version} | '
+              'gzip > {TMP_DIR}/{release}.tar.gz'.format(
+                  _version=version, **env))
     run('mkdir -p {project_path}/releases/{release}'.format(**env))
     put('{TMP_DIR}/{release}.tar.gz'.format(**env),
         '{project_path}/packages/'.format(**env))
@@ -276,6 +309,7 @@ def symlink_current_release():
         run('rm releases/previous; mv releases/current releases/previous;')
         run('ln -s {release} releases/current'.format(**env))
     
+@task
 def migrate():
     "Update the database"
     require('hosts', 'project_path', provided_by=ENVS)
