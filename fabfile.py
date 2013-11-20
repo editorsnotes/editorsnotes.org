@@ -87,7 +87,7 @@ def deploy():
     install_requirements()
     symlink_system_packages()
     install_nodejs()
-    install_site()
+    install_vhosts()
     symlink_current_release()
     migrate()
     collect_static()
@@ -133,6 +133,51 @@ def clean():
         run('rm -rf packages; rm -rf releases')
         run('mkdir -p packages; mkdir -p releases')
         run('cd releases; touch none; ln -sf none current; ln -sf none previous')
+
+@task
+def install_vhosts():
+    "Add the virtualhost file to apache."
+    require('release', provided_by=ENVS)
+    vhost_file = 'vhosts/vhost-{host}.conf'.format(**env)
+    if not os.path.exists(vhost_file):
+        abort(red('Put the vhost config for {} at {}'.format(
+            env.host, vhost_file)))
+    put('django.wsgi', '{project_path}/releases/{release}'.format(**env))
+    put(vhost_file, '{project_path}/vhost-{host}.conf.tmp'.format(**env))
+    with cd(env.project_path):
+        sudo('mv -f vhost-{host}.conf.tmp {vhosts_path}/vhost-{host}.conf'.format(
+            **env), pty=True)
+
+
+
+MAINTENANCE_TEXT = """
+<!doctype html>
+<html>
+  <head><title>Editors' Notes: Down for maintenance</title></head>
+  <body>
+    <p>Editors' Notes is down for maintenance, but will return soon.</p>
+  </body>
+</html>
+"""
+@task
+def take_offline():
+    "Take the site down for maintanence, redirecting all requests to a notification."
+    require('project_path', provided_by=ENVS)
+    maintenance_file_path = '{TMP_DIR}/maintenance.html'.format(**env)
+    with open(maintenance_file_path, 'w') as outfile:
+        outfile.write(MAINTENANCE_TEXT)
+    put(maintenance_file_path, env.project_path)
+    local('rm {}'.format(maintenance_file_path))
+    local('rmdir --ignore-fail-on-non-empty {TMP_DIR}'.format(**env))
+    restart_webserver()
+
+@task
+def put_back_online():
+    require('project_path', provided_by=ENVS)
+    maintenance_file_path = '{project_path}/maintenance.html'.format(**env)
+    if exists(maintenance_file_path):
+        run('rm {}'.format(maintenance_file_path))
+        restart_webserver()
     
 
 ###########
@@ -223,19 +268,6 @@ def install_nodejs():
         run('export NPM_CONFIG_PREFIX="{0}" && ./{0}/bin/npm install -g less'.format(pkg))
         run('export NPM_CONFIG_PREFIX="{0}" && ./{0}/bin/npm install -g jsmin'.format(pkg))
         run('ln -fs {} node'.format(pkg))
-
-def install_site():
-    "Add the virtualhost file to apache."
-    require('release', provided_by=ENVS)
-    vhost_file = 'vhosts/vhost-{host}.conf'.format(**env)
-    if not os.path.exists(vhost_file):
-        abort(red('Put the vhost config for {} at {}'.format(
-            env.host, vhost_file)))
-    put('django.wsgi', '{project_path}/releases/{release}'.format(**env))
-    put(vhost_file, '{project_path}/vhost-{host}.conf.tmp'.format(**env))
-    with cd(env.project_path):
-        sudo('mv -f vhost-{host}.conf.tmp {vhosts_path}/vhost-{host}.conf'.format(
-            **env), pty=True)
 
 def symlink_current_release():
     "Symlink our current release."
