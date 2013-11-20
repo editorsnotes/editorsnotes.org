@@ -301,7 +301,7 @@ def install_nodejs():
             run('tar xzf {0}.tar.gz && rm {0}.tar.gz'.format(pkg))
 
     with cd(os.path.join(env.project_path, 'lib')):
-        run('export NPM_CONFIG_PREFIX="{0}" && ./{0}/bin/npm install -g less'.format(pkg))
+        run('export NPM_CONFIG_PREFIX="{0}" && ./{0}/bin/npm install -g less@1.3.0'.format(pkg))
         run('export NPM_CONFIG_PREFIX="{0}" && ./{0}/bin/npm install -g jsmin'.format(pkg))
         run('ln -fs {} node'.format(pkg))
 
