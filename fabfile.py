@@ -268,7 +268,7 @@ def upload_deploy_info():
     with lcd(os.getenv('EDITORSNOTES_GIT')), open(version_file, 'wb') as f:
         call(['git', 'rev-parse', 'HEAD'], stdout=f)
 
-    release, url = get_deploy_info
+    release, url = get_deploy_info()
     with open(version_file, 'wb') as f:
         f.write(release)
     with open(version_url_file, 'wb') as f:
