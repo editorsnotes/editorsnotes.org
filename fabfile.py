@@ -241,23 +241,47 @@ def upload_local_settings():
     put(settings_file,
         '{project_path}/releases/{release}/{project_name}/settings_local.py'.format(**env))
 
+def get_deploy_info():
+    with lcd(os.getenv('EDITORSNOTES_GIT')):
+        current_tag = local('git describe --tags --exact-match 2> /dev/null || true',
+                            capture=True)
+        if current_tag:
+            release = current_tag
+        else:
+            release = local('git rev-parse HEAD', capture=True)
+        github_repo = local('git remote --verbose | '
+                            'grep -o "git@github.com.* (push)" | '
+                            'head -n 1 | '
+                            "sed -r -e 's/git@github.com:([^ ]+)\.git.*/\\1/'",
+                        capture=True)
+    url = github_repo and 'http://github.com/{}/tree/{}'.format(github_repo, release)
+    return release, url
+
 def upload_deploy_info():
     "Upload information about the version and time of deployment."
     require('release', provided_by=ENVS)
 
     version_file = os.path.join(env.TMP_DIR, 'version.txt')
+    version_url_file = os.path.join(env.TMP_DIR, 'version_url.txt')
     time_file = os.path.join(env.TMP_DIR, 'time-deployed.txt')
 
     with lcd(os.getenv('EDITORSNOTES_GIT')), open(version_file, 'wb') as f:
         call(['git', 'rev-parse', 'HEAD'], stdout=f)
 
+    release, url = get_deploy_info
+    with open(version_file, 'wb') as f:
+        f.write(release)
+    with open(version_url_file, 'wb') as f:
+        f.write(url)
     with open(time_file, 'wb') as f:
         f.write(datetime.now().strftime('%Y-%m-%d %H:%M'))
 
     dest = '{project_path}/releases/{release}/{project_name}/templates'.format(**env)
     put(version_file, dest)
+    put(version_url_file, dest)
     put(time_file, dest)
     local('rm {}'.format(version_file))
+    local('rm {}'.format(version_url_file))
     local('rm {}'.format(time_file))
 
 def install_requirements():
