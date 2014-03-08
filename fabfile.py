@@ -262,7 +262,7 @@ def upload_deploy_info():
     require('release', provided_by=ENVS)
 
     version_file = os.path.join(env.TMP_DIR, 'version.txt')
-    version_url_file = os.path.join(env.TMP_DIR, 'version_url.txt')
+    version_url_file = os.path.join(env.TMP_DIR, 'version-url.txt')
     time_file = os.path.join(env.TMP_DIR, 'time-deployed.txt')
 
     with lcd(os.getenv('EDITORSNOTES_GIT')), open(version_file, 'wb') as f:
