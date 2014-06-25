@@ -4,6 +4,7 @@ from fabric.api import *
 from fabric.colors import red, green
 from fabric.contrib.console import confirm
 from fabric.contrib.files import exists
+from fabric.context_managers import path
 from datetime import datetime
 from subprocess import call
 import os
@@ -102,10 +103,10 @@ def deploy(version='HEAD'):
     upload_deploy_info()
     install_requirements()
     symlink_system_packages()
-    install_nodejs()
     install_vhosts()
     install_wsgi()
     symlink_current_release()
+    install_nodejs()
     collect_static()
     restart_webserver()
 
@@ -312,7 +313,7 @@ def symlink_system_packages():
         abort(red('Missing python packages: {}'.format(', '.join(missing))))
 
 def install_nodejs():
-    NODE_VERSION = 'v0.8.18'
+    NODE_VERSION = 'v0.10.28'
     PLATFORM = '64' if run('uname -m', quiet=True).endswith('64') else '86'
     pkg = 'node-{}-linux-x{}'.format(NODE_VERSION, PLATFORM)
     tarball = 'http://nodejs.org/dist/{}/{}.tar.gz'.format(NODE_VERSION, pkg)
@@ -322,12 +323,15 @@ def install_nodejs():
     else:
         with cd(os.path.join(env.project_path, 'lib')):
             run('wget {}'.format(tarball))
+            run('rm -f ./node')
             run('tar xzf {0}.tar.gz && rm {0}.tar.gz'.format(pkg))
+            run('ln -fs {} node'.format(pkg))
 
     with cd(os.path.join(env.project_path, 'lib')):
-        run('export NPM_CONFIG_PREFIX="{0}" && ./{0}/bin/npm install -g less@1.3.0'.format(pkg))
-        run('export NPM_CONFIG_PREFIX="{0}" && ./{0}/bin/npm install -g jsmin'.format(pkg))
-        run('ln -fs {} node'.format(pkg))
+        run('cp ../releases/current/package.json .')
+        run('./node/bin/npm install')
+        run('rm package.json')
+        run('./node/bin/npm install -g jsmin')
 
 def symlink_current_release():
     "Symlink our current release."
@@ -349,7 +353,10 @@ def collect_static():
     require('hosts', 'project_path', provided_by=ENVS)
     with cd('{project_path}/releases/current'.format(**env)):
         run('../../bin/python manage.py collectstatic --noinput')
-    
+        run('ln -s ../../lib/node_modules .')
+        with path('../../lib/node/bin', behavior='prepend'):
+            run('../../bin/python manage.py compile_browserify')
+
 @task
 def restart_webserver():
     "Restart the web server."
