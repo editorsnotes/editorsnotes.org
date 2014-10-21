@@ -100,7 +100,7 @@ def deploy(version='HEAD'):
     local('mkdir -p {}'.format(env.TMP_DIR))
     upload_tar_from_git(version)
     upload_local_settings()
-    upload_deploy_info()
+    upload_deploy_info(version)
     install_requirements()
     symlink_system_packages()
     install_vhosts()
@@ -242,14 +242,16 @@ def upload_local_settings():
     put(settings_file,
         '{project_path}/releases/{release}/{project_name}/settings_local.py'.format(**env))
 
-def get_deploy_info():
+def get_deploy_info(version):
     with lcd(os.getenv('EDITORSNOTES_GIT')):
-        current_tag = local('git describe --tags --exact-match 2> /dev/null || true',
+        release = local('git rev-parse {}'.format(version), capture=True)
+
+        current_tag = local('git describe --tags --exact-match {} '
+                            '2> /dev/null || true'.format(release),
                             capture=True)
         if current_tag:
             release = current_tag
-        else:
-            release = local('git rev-parse HEAD', capture=True)
+
         github_repo = local('git remote --verbose | '
                             'grep -o "git@github.com.* (push)" | '
                             'head -n 1 | '
@@ -258,7 +260,7 @@ def get_deploy_info():
     url = github_repo and 'http://github.com/{}/tree/{}'.format(github_repo, release)
     return release, url
 
-def upload_deploy_info():
+def upload_deploy_info(version):
     "Upload information about the version and time of deployment."
     require('release', provided_by=ENVS)
 
@@ -267,9 +269,9 @@ def upload_deploy_info():
     time_file = os.path.join(env.TMP_DIR, 'time-deployed.txt')
 
     with lcd(os.getenv('EDITORSNOTES_GIT')), open(version_file, 'wb') as f:
-        call(['git', 'rev-parse', 'HEAD'], stdout=f)
+        call(['git', 'rev-parse', version], stdout=f)
 
-    release, url = get_deploy_info()
+    release, url = get_deploy_info(version)
     with open(version_file, 'wb') as f:
         f.write(release)
     with open(version_url_file, 'wb') as f:
