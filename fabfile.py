@@ -65,13 +65,14 @@ def setup():
     require('hosts', 'project_path', provided_by=ENVS)
     run('mkdir -p {project_path}'.format(**env))
     with cd(env.project_path):
-        run('virtualenv -p {python} --no-site-packages .'.format(**env))
-        run('mkdir -p logs releases shared packages')
-        run('cd releases; touch none; ln -sf none current; ln -sf none previous')
-    deploy()
-    
+        run('mkdir -p api renderer')
+        with cd('api'):
+            run('virtualenv -p {python} --no-site-packages .'.format(**env))
+            run('mkdir -p logs releases shared packages')
+            run('cd releases; touch none; ln -sf none current; ln -sf none previous')
+
 @task
-def deploy(version='HEAD'):
+def deploy_api(version='HEAD'):
     """
     Deploy the latest version of the site.
 
@@ -102,20 +103,24 @@ def deploy(version='HEAD'):
     upload_local_settings()
     upload_deploy_info(version)
     install_requirements()
-    symlink_system_packages()
-    install_vhosts()
-    install_wsgi()
+    #install_vhosts()
+    #install_wsgi()
     symlink_current_release()
-    install_nodejs()
-    collect_static()
-    restart_webserver()
+    #install_nodejs()
+    #collect_static()
+    #restart_webserver()
+
+@task
+def deploy_renderer():
+    pass
+
 
 @task
 def full_deploy(version='HEAD'):
     """
     Deploy the site, migrate the database, and open in a web browser.
     """
-    deploy(version)
+    deploy_api(version)
     migrate()
     time.sleep(2)
     local('rmdir --ignore-fail-on-non-empty {TMP_DIR}'.format(**env))
@@ -225,10 +230,10 @@ def upload_tar_from_git(version='HEAD'):
         local('git archive --format=tar {_version} | '
               'gzip > {TMP_DIR}/{release}.tar.gz'.format(
                   _version=version, **env))
-    run('mkdir -p {project_path}/releases/{release}'.format(**env))
+    run('mkdir -p {project_path}/api/releases/{release}'.format(**env))
     put('{TMP_DIR}/{release}.tar.gz'.format(**env),
-        '{project_path}/packages/'.format(**env))
-    with cd('{project_path}/releases/{release}'.format(**env)):
+        '{project_path}/api/packages/'.format(**env))
+    with cd('{project_path}/api/releases/{release}'.format(**env)):
         run('tar zxf ../../packages/{release}.tar.gz'.format(**env))
     local('rm {TMP_DIR}/{release}.tar.gz'.format(**env))
 
@@ -240,7 +245,7 @@ def upload_local_settings():
         abort(red('Put the settings for {} at {}'.format(
             env.host, settings_file)))
     put(settings_file,
-        '{project_path}/releases/{release}/{project_name}/settings_local.py'.format(**env))
+        '{project_path}/api/releases/{release}/{project_name}/settings_local.py'.format(**env))
 
 def get_deploy_info(version):
     with lcd(os.getenv('EDITORSNOTES_GIT')):
@@ -279,7 +284,7 @@ def upload_deploy_info(version):
     with open(time_file, 'wb') as f:
         f.write(datetime.now().strftime('%Y-%m-%d %H:%M'))
 
-    dest = '{project_path}/releases/{release}/{project_name}/templates'.format(**env)
+    dest = '{project_path}/api/releases/{release}'.format(**env)
     put(version_file, dest)
     put(version_url_file, dest)
     put(time_file, dest)
@@ -290,7 +295,7 @@ def upload_deploy_info(version):
 def install_requirements():
     "Install the required packages from the requirements file using pip"
     require('release', provided_by=ENVS)
-    with cd('{project_path}'.format(**env)):
+    with cd('{project_path}/api'.format(**env)):
         run('./bin/pip install -r ./releases/{release}/requirements.txt'.format(**env))
 
 def symlink_system_packages():
@@ -339,15 +344,15 @@ def symlink_current_release():
     "Symlink our current release."
     require('release', provided_by=ENVS)
     with cd(env.project_path):
-        run('rm releases/previous; mv releases/current releases/previous;')
-        run('ln -s {release} releases/current'.format(**env))
+        with cd('api'):
+            run('rm releases/previous; mv releases/current releases/previous;')
+            run('ln -s {release} releases/current'.format(**env))
     
 @task
 def migrate():
     "Update the database"
     require('hosts', 'project_path', provided_by=ENVS)
     with cd('{project_path}/releases/current'.format(**env)):
-        run('../../bin/python manage.py syncdb --noinput')
         run('../../bin/python manage.py migrate --noinput')
 
 def collect_static():
