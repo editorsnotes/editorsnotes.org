@@ -5,11 +5,20 @@ from fabric.colors import red, green
 from fabric.contrib.console import confirm
 from fabric.contrib.files import exists
 from fabric.context_managers import path
+
 from datetime import datetime
 from subprocess import call
+
 import os
 import sys
 import time
+
+
+# Namespaced fabric tasks
+import envs
+import api
+import renderer
+import maintenance
 
 
 ####################
@@ -35,99 +44,87 @@ if not env.git['renderer']:
         'Editors\'s Notes renderer git repository.'
     ))
 
-import envs
-import api
-import renderer
-
-
 #########
 # Tasks #
 #########
 @task
-def test_remote():
-    "Run the test suite remotely."
-    require('hosts', 'project_path', provided_by=envs.ENVS)
-    with cd('{project_path}/releases/current'.format(**env)):
-        run('../../bin/python manage.py test')
-    
-@task
 def setup():
     """
-    Setup a new virtualenv & create project dirs, then run a full deployment.
+    Setup all project directories.
     """
     require('hosts', 'project_path', provided_by=envs.ENVS)
     run('mkdir -p {project_path}'.format(**env))
     with cd(env.project_path):
-        run('mkdir -p api renderer')
-        with cd('api'):
-            run('virtualenv -p {python} --no-site-packages .'.format(**env))
-            run('mkdir -p logs releases shared packages')
-            run('cd releases; touch none; ln -sf none current; ln -sf none previous')
+        run('mkdir -p api renderer lib conf')
+        make_release_folders('api')
+        make_release_folders('renderer')
 
 @task
-def full_deploy(version='HEAD'):
+def upload_nginx_conf():
+    require('nginx_conf_path', provided_by=envs.ENVS)
+    nginx_file = 'nginx/nginx-{host}.conf'.format(**env)
+    if not os.path.exists(nginx_file):
+        abort(red('Put the nginx config for {} at {}'.format(
+            env.host, nginx_file)))
+    put(nginx_file, '{project_path}/confs/nginx.conf.tmp'.format(**env))
+    with cd(env.project_path):
+        sudo('mv -f confs/nginx.conf.tmp '
+             '{nginx_conf_path}/{project_name}.conf'.format(**env), pty=True)
+
+@task
+def restart_nginx():
+    sudo('systemctl restart nginx.server', pty=True)
+
+
+def make_release_folders(dirname):
+    """
+    Setup folders for each subproject.
+
+      * logs: Logs for long-running process
+      * releases: Code for release currently being run
+      * packages: tarballs for the folders in releases
+    """
+    require('hosts', 'project_path', provided_by=envs.ENVS)
+    with cd(env.project_path):
+        with cd(dirname):
+            run('mkdir -p logs releases packages')
+            with cd('releases'):
+                run('touch none')
+                run('test ! -e current && ln -s none current', quiet=True)
+                run('test ! -e previous && ln -s none previous', quiet=True)
+
+@task
+def full_deploy(api_version='HEAD', renderer_version='HEAD'):
     """
     Deploy the site, migrate the database, and open in a web browser.
     """
-    deploy_api(version)
-    migrate()
+    install_iojs()
+
+    api.full_deploy(api_version)
+    renderer.full_deploy(renderer_version)
+
+    upload_nginx_conf()
+    restart_nginx()
+
     time.sleep(2)
+
     local('rmdir --ignore-fail-on-non-empty {TMP_DIR}'.format(**env))
     local('{} http://{}/'.format(
         'xdg-open' if 'linux' in sys.platform else 'open', env.host))
     
 
-
-MAINTENANCE_TEXT = """
-<!doctype html>
-<html>
-  <head><title>Editors' Notes: Down for maintenance</title></head>
-  <body>
-    <p>Editors' Notes is down for maintenance, but will return soon.</p>
-  </body>
-</html>
-"""
 @task
-def take_offline():
-    "Take the site down for maintanence, redirecting all requests to a notification."
-    require('project_path', provided_by=envs.ENVS)
-    maintenance_file_path = '{TMP_DIR}/offline.html'.format(**env)
-    with open(maintenance_file_path, 'w') as outfile:
-        outfile.write(MAINTENANCE_TEXT)
-    put(maintenance_file_path, env.project_path)
-    local('rm {}'.format(maintenance_file_path))
-    local('rmdir --ignore-fail-on-non-empty {TMP_DIR}'.format(**env))
-    restart_webserver()
-
-@task
-def put_back_online():
-    require('project_path', provided_by=envs.ENVS)
-    maintenance_file_path = '{project_path}/offline.html'.format(**env)
-    if exists(maintenance_file_path):
-        run('rm {}'.format(maintenance_file_path))
-        restart_webserver()
-    
-
-###########
-# Helpers #
-###########
-def install_nodejs():
-    NODE_VERSION = 'v0.10.28'
+def install_iojs():
+    IOJS_VERSION = 'v2.4.0'
     PLATFORM = '64' if run('uname -m', quiet=True).endswith('64') else '86'
-    pkg = 'node-{}-linux-x{}'.format(NODE_VERSION, PLATFORM)
-    tarball = 'http://nodejs.org/dist/{}/{}.tar.gz'.format(NODE_VERSION, pkg)
+    pkg = 'iojs-{}-linux-x{}'.format(IOJS_VERSION, PLATFORM)
+    tarball = 'https://iojs.org/dist/{}/{}.tar.xz'.format(IOJS_VERSION, pkg)
 
     if exists('{}/lib/{}'.format(env.project_path, pkg)):
-        print 'node.js {} already installed'.format(NODE_VERSION)
+        print 'io.js {} already installed'.format(IOJS_VERSION)
     else:
         with cd(os.path.join(env.project_path, 'lib')):
             run('wget {}'.format(tarball))
-            run('rm -f ./node')
-            run('tar xzf {0}.tar.gz && rm {0}.tar.gz'.format(pkg))
-            run('ln -fs {} node'.format(pkg))
-
-    with cd(os.path.join(env.project_path, 'lib')):
-        run('cp ../releases/current/package.json .')
-        run('./node/bin/npm install')
-        run('rm package.json')
-        run('./node/bin/npm install -g jsmin')
+            run('rm -f ./iojs-current')
+            run('tar xJf {0}.tar.xz && rm {0}.tar.xz'.format(pkg))
+            run('ln -fs {} iojs-current'.format(pkg))
