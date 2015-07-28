@@ -10,3 +10,6 @@ settings/settings-*.py
 vhosts/vhost-*
 !vhosts/vhost-beta.editorsnotes.org.conf
 !vhosts/vhost-editorsnotes.org.conf
+nginx/settings-*
+!nginx/settings-beta.editorsnotes.org.conf
+!nginx/settings-editorsnotes.org.conf
