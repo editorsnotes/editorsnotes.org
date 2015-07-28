@@ -1,13 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from fabric.api import *
-from fabric.colors import red, green
-from fabric.contrib.console import confirm
+from fabric.colors import red
 from fabric.contrib.files import exists
-from fabric.context_managers import path
-
-from datetime import datetime
-from subprocess import call
 
 import os
 import sys
@@ -43,6 +38,7 @@ if not env.git['renderer']:
         'Set EDITORSNOTES_API_RENDERER environment variable with a path to an '
         'Editors\'s Notes renderer git repository.'
     ))
+
 
 #########
 # Tasks #
@@ -93,6 +89,7 @@ def make_release_folders(dirname):
                 run('test ! -e current && ln -s none current', quiet=True)
                 run('test ! -e previous && ln -s none previous', quiet=True)
 
+
 @task
 def full_deploy(api_version='HEAD', renderer_version='HEAD'):
     """
@@ -111,7 +108,7 @@ def full_deploy(api_version='HEAD', renderer_version='HEAD'):
     local('rmdir --ignore-fail-on-non-empty {TMP_DIR}'.format(**env))
     local('{} http://{}/'.format(
         'xdg-open' if 'linux' in sys.platform else 'open', env.host))
-    
+
 
 @task
 def install_iojs():
