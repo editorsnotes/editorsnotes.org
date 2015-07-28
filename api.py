@@ -66,7 +66,7 @@ def migrate():
 
 def install_wsgi():
     "Install the wsgi file for the current release"
-    put('django.wsgi', '{project_path}/api/releases/current/'.format(**env))
+    put('django.wsgi', '{project_path}/api/releases/current/wsgi.py'.format(**env))
 
 
 
