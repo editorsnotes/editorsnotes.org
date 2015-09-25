@@ -52,6 +52,8 @@ def setup():
     run('mkdir -p {project_path}'.format(**env))
     with cd(env.project_path):
         run('mkdir -p api renderer lib conf')
+        run('mkdir -p api/static api/uploads')
+
         make_release_folders('api')
         make_release_folders('renderer')
 

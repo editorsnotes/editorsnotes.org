@@ -139,8 +139,9 @@ def install_requirements():
             './releases/current/requirements.txt'.format(**env))
 
 
+@task
 def collect_static():
     "Collect static files"
     require('hosts', 'project_path', provided_by=ENVS)
-    with cd('{project_path}/releases/current'.format(**env)):
-        run('../../bin/python manage.py collectstatic --noinput')
+    with cd('{project_path}/api/releases/current'.format(**env)):
+        run('../../venv/bin/python manage.py collectstatic --noinput')
