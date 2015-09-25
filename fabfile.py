@@ -43,6 +43,38 @@ if not env.git['renderer']:
 #########
 # Tasks #
 #########
+
+@task
+def create_configs():
+    require('hosts', 'project_path', provided_by=envs.ENVS)
+
+def create_template(template_vars, template_script):
+    require(*template_vars, provided_by=envs.ENVS)
+    template_string = ' '.join(['{' + var + '}' for var in template_vars])
+
+    template_command = (template_script + ' ' + template_string).format(**env)
+    return local(template_command, capture=True)
+
+
+@task
+def create_uwsgi_conf():
+    template_vars = [
+        'project_name',
+        'project_path',
+        'uwsgi_gid',
+        'uwsgi_uid',
+        'uwsgi_socket_gid',
+        'uwsgi_socket_uid',
+        'uwsgi_socket_chmod'
+    ]
+
+    output_filename = 'uwsgi/uwsgi-{project_name}.ini'.format(**env)
+
+    uwsgi_conf = create_template(template_vars, './uwsgi/uwsgi-TEMPLATE.ini.py')
+
+    with open(output_filename, 'w') as outfile:
+        outfile.write(uwsgi_conf)
+
 @task
 def setup():
     """
