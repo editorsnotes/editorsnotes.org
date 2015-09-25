@@ -72,7 +72,7 @@ def write_config(conf_type, filename, content):
 @task
 def create_uwsgi_conf():
     template_vars = [
-        'project_name',
+        'host',
         'project_path',
         'uwsgi_gid',
         'uwsgi_uid',
