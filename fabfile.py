@@ -2,6 +2,7 @@
 
 from fabric.api import *
 from fabric.colors import red
+from fabric.contrib.console import confirm
 from fabric.contrib.files import exists
 
 import os
@@ -56,6 +57,18 @@ def create_template(template_vars, template_script):
     return local(template_command, capture=True)
 
 
+def write_config(conf_type, filename, content):
+    if os.path.exists(filename):
+        msg = '{} configuration already exists at {}\nOverwrite?'.format(
+            conf_type, filename)
+
+        print ''
+
+        if not confirm(msg):
+            return
+
+    with open(filename, 'w') as outfile:
+        outfile.write(content)
 @task
 def create_uwsgi_conf():
     template_vars = [
@@ -68,12 +81,10 @@ def create_uwsgi_conf():
         'uwsgi_socket_chmod'
     ]
 
-    output_filename = 'uwsgi/uwsgi-{project_name}.ini'.format(**env)
-
+    output_filename = 'uwsgi/uwsgi-{host}.ini'.format(**env)
     uwsgi_conf = create_template(template_vars, './uwsgi/uwsgi-TEMPLATE.ini.py')
 
-    with open(output_filename, 'w') as outfile:
-        outfile.write(uwsgi_conf)
+    write_config('uWSGI', output_filename, uwsgi_conf)
 
 @task
 def setup():
