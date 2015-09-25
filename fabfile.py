@@ -86,6 +86,60 @@ def create_uwsgi_conf():
 
     write_config('uWSGI', output_filename, uwsgi_conf)
 
+
+@task
+def create_nginx_conf():
+    template_vars = [
+        'host',
+        'project_path',
+        'uwsgi_socket_location',
+        'renderer_port',
+    ]
+
+    output_filename = 'nginx/nginx-{project_name}.ini'.format(**env)
+
+    nginx_conf = create_template(template_vars, './nginx/nginx-TEMPLATE.ini.py')
+
+    with open(output_filename, 'w') as outfile:
+        outfile.write(nginx_conf)
+
+
+@task
+def create_api_service():
+    template_vars = [
+        'project_name',
+        'uwsgi_socket_gid',
+        'uwsgi_socket_uid',
+        'uwsgi_conf_file',
+    ]
+
+    output_filename = 'systemd/{project_name}.api.service'.format(**env)
+
+    api_service = create_template(
+        template_vars, './systemd/TEMPLATE.api.service.py')
+
+    with open(output_filename, 'w') as outfile:
+        outfile.write(api_service)
+
+
+@task
+def create_renderer_service():
+    template_vars = [
+        'project_name',
+        'project_path',
+        'host',
+        'renderer_port',
+    ]
+
+    output_filename = 'systemd/{project_name}.renderer.service'.format(**env)
+
+    renderer_service = create_template(
+        template_vars, './systemd/TEMPLATE.renderer.service.py')
+
+    with open(output_filename, 'w') as outfile:
+        outfile.write(renderer_service)
+
+
 @task
 def setup():
     """
