@@ -103,7 +103,7 @@ def setup():
 
 @task
 def upload_uwsgi_conf():
-    require('nginx_conf_path', 'host', provided_by=envs.ENVS)
+    require('uwsgi_conf_file', 'host', provided_by=envs.ENVS)
     uwsgi_file = 'uwsgi/uwsgi-{host}.ini'.format(**env)
 
     check_file(uwsgi_file)
@@ -112,12 +112,12 @@ def upload_uwsgi_conf():
     with cd(env.project_path):
         sudo('chmod 644 conf/uwsgi.ini.tmp')
         sudo('chown root:root conf/uwsgi.ini.tmp')
-        sudo('mv -f conf/uwsgi.ini.tmp '
-             '{uwsgi_conf_path}/{project_name}.ini'.format(**env), pty=True)
+        sudo('mv -f conf/uwsgi.ini.tmp {uwsgi_conf_file}'
+             .format(**env), pty=True)
 
 @task
 def upload_nginx_conf():
-    require('nginx_conf_path', provided_by=envs.ENVS)
+    require('nginx_conf_file', 'host', provided_by=envs.ENVS)
     nginx_file = 'nginx/nginx-{host}.conf'.format(**env)
 
     check_file(nginx_file)
@@ -126,8 +126,7 @@ def upload_nginx_conf():
     with cd(env.project_path):
         sudo('chown root:root conf/nginx.conf.tmp')
         sudo('chmod 644 conf/nginx.conf.tmp')
-        sudo('mv -f conf/nginx.conf.tmp '
-             '{nginx_conf_path}/{project_name}.conf'.format(**env), pty=True)
+        sudo('mv -f conf/nginx.conf.tmp {nginx_conf_file}'.format(**env), pty=True)
 
 @task
 def install_systemd_services():
