@@ -76,12 +76,14 @@ def upload_uwsgi_conf():
 def upload_nginx_conf():
     require('nginx_conf_path', provided_by=envs.ENVS)
     nginx_file = 'nginx/nginx-{host}.conf'.format(**env)
-    if not os.path.exists(nginx_file):
-        abort(red('Put the nginx config for {} at {}'.format(
-            env.host, nginx_file)))
-    put(nginx_file, '{project_path}/confs/nginx.conf.tmp'.format(**env))
+
+    check_file(nginx_file)
+
+    put(nginx_file, '{project_path}/conf/nginx.conf.tmp'.format(**env))
     with cd(env.project_path):
-        sudo('mv -f confs/nginx.conf.tmp '
+        sudo('chown root:root conf/nginx.conf.tmp')
+        sudo('chmod 644 conf/nginx.conf.tmp')
+        sudo('mv -f conf/nginx.conf.tmp '
              '{nginx_conf_path}/{project_name}.conf'.format(**env), pty=True)
 
 @task
@@ -116,6 +118,11 @@ def make_uwsgi_run_dir():
     require('host', provided_by=envs.ENVS)
     sudo('mkdir -p /run/uwsgi')
     sudo('chown www-data:www-data /run/uwsgi')
+
+def check_file(filename):
+    if not os.path.exists(filename):
+        abort(red('Missing config file for {} at {}'.format(
+            env.host, filename)))
 
 
 def make_release_folders(dirname):
