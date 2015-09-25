@@ -85,8 +85,32 @@ def upload_nginx_conf():
              '{nginx_conf_path}/{project_name}.conf'.format(**env), pty=True)
 
 @task
-def restart_nginx():
-    sudo('systemctl restart nginx.server', pty=True)
+def install_systemd_services():
+    require('host', 'project_path', provided_by=envs.ENVS)
+    for service in ['api', 'renderer']:
+        service_file = '{}.{}.service'.format(env.host, service)
+        local_conf = 'systemd/{}'.format(service_file)
+        check_file(local_conf)
+        put(local_conf, '{}/conf/{}.tmp'.format(env.project_path, service_file))
+        with cd(os.path.join(env.project_path, 'conf')):
+            sudo('chown root:root {}.tmp'.format(service_file))
+            sudo('chmod 644 {}.tmp'.format(service_file))
+            sudo('mv -f {0}.tmp /etc/systemd/system/{0}'.format(service_file))
+    make_uwsgi_run_dir()
+    sudo('systemctl daemon-reload')
+
+@task
+def remove_systemd_services():
+    for service in ['api', 'renderer']:
+        sudo('rm -f /etc/systemd/system/{}.{}.service'.format(env.host, service))
+    sudo('systemctl daemon-reload')
+
+@task
+def restart_all_services():
+    make_uwsgi_run_dir()
+    services = ['{}.{}.service'.format(env.host, service)
+                for service in ['api', 'renderer']]
+    sudo('systemctl restart {} nginx.service'.format(' '.join(services)))
 
 def make_uwsgi_run_dir():
     require('host', provided_by=envs.ENVS)
@@ -123,7 +147,10 @@ def full_deploy(api_version='HEAD', renderer_version='HEAD'):
     renderer.full_deploy(renderer_version)
 
     upload_nginx_conf()
-    restart_nginx()
+    upload_uwsgi_conf()
+    install_systemd_services()
+
+    restart_all_services()
 
     time.sleep(2)
 
