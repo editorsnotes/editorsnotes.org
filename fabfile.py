@@ -148,6 +148,7 @@ def full_deploy(api_version='HEAD', renderer_version='HEAD'):
     """
     Deploy the site, migrate the database, and open in a web browser.
     """
+    setup()
     install_iojs()
 
     api.full_deploy(api_version)
