@@ -57,6 +57,21 @@ def setup():
         make_release_folders('api')
         make_release_folders('renderer')
 
+
+@task
+def upload_uwsgi_conf():
+    require('nginx_conf_path', 'host', provided_by=envs.ENVS)
+    uwsgi_file = 'uwsgi/uwsgi-{host}.ini'.format(**env)
+
+    check_file(uwsgi_file)
+
+    put(uwsgi_file, '{project_path}/conf/uwsgi.ini.tmp'.format(**env))
+    with cd(env.project_path):
+        sudo('chmod 644 conf/uwsgi.ini.tmp')
+        sudo('chown root:root conf/uwsgi.ini.tmp')
+        sudo('mv -f conf/uwsgi.ini.tmp '
+             '{uwsgi_conf_path}/{project_name}.ini'.format(**env), pty=True)
+
 @task
 def upload_nginx_conf():
     require('nginx_conf_path', provided_by=envs.ENVS)
@@ -72,6 +87,11 @@ def upload_nginx_conf():
 @task
 def restart_nginx():
     sudo('systemctl restart nginx.server', pty=True)
+
+def make_uwsgi_run_dir():
+    require('host', provided_by=envs.ENVS)
+    sudo('mkdir -p /run/uwsgi')
+    sudo('chown www-data:www-data /run/uwsgi')
 
 
 def make_release_folders(dirname):
