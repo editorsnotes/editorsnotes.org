@@ -11,14 +11,37 @@ vhosts/vhost-*
 !vhosts/vhost-beta.editorsnotes.org.conf
 !vhosts/vhost-editorsnotes.org.conf
 
+# Ignore all conf files except those whitelisted below
 nginx/nginx-*
-!nginx/nginx-beta.editorsnotes.org.conf
-!nginx/nginx-editorsnotes.org.conf
-
 uwsgi/uwsgi-*
-!uwsg/uwsgi-beta.editorsnotes.org.ini
-!uwsg/uwsgi-editorsnotes.org.ini
-
 systemd/*
+
+# Templates for generating confs
+!nginx/nginx-TEMPLATE.ini.py
+!uwsgi/uwsgi-TEMPLATE.ini.py
+!systemd/TEMPLATE.api.service.py
+!systemd/TEMPLATE.renderer.service.py
+
+# workingnotes.org
+!nginx/nginx-workingnotes.org.conf
+!uwsgi/uwsgi-workingnotes.org.ini
+!systemd/workingnotes.org.api.service
+!systemd/workingnotes.org.renderer.service
+
+# test.workingnotes.org
+!nginx/nginx-test.workingnotes.org.conf
+!uwsgi/uwsgi-test.workingnotes.org.ini
+!systemd/test.workingnotes.org.api.service
+!systemd/test.workingnotes.org.renderer.service
+
+# editorsnotes.org
+!nginx/nginx-editorsnotes.org.conf
+!uwsgi/uwsgi-editorsnotes.org.ini
 !systemd/editorsnotes.org.api.service
 !systemd/editorsnotes.org.renderer.service
+
+# beta.editorsnotes.org
+!nginx/nginx-beta.editorsnotes.org.conf
+!uwsgi/uwsgi-beta.editorsnotes.org.ini
+!systemd/beta.editorsnotes.org.api.service
+!systemd/beta.editorsnotes.org.renderer.service
