@@ -2,7 +2,7 @@
 Description=Editors' Notes renderer node server for workingnotes.org
 
 [Service]
-ExecStart= /usr/local/projects/workingnotes.org/lib/iojs-current/bin/iojs /usr/local/projects/workingnotes.org/renderer/releases/current/src/server
+ExecStart=node /usr/local/projects/workingnotes.org/renderer/releases/current/src/server
 Restart=always
 
 StandardOutput=syslog
