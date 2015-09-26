@@ -142,7 +142,11 @@ def setup():
     Setup all project directories.
     """
     require('hosts', 'project_path', provided_by=envs.ENVS)
-    run('mkdir -p {project_path}'.format(**env))
+
+    if not exists(env.project_path):
+        abort(red('Project path ({project_path}) does not exist. '
+                  'Create it on the server before continuing.'.format(**env)))
+
     with cd(env.project_path):
         run('mkdir -p api renderer lib conf')
         run('mkdir -p api/static api/uploads')
