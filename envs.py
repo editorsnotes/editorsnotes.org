@@ -60,4 +60,10 @@ except ImportError:
     pass
 
 # Create custom environments in fabfile_local.py, in the same style as above
-ENVS = [beta, pro, 'Custom host defined in fabfile_local.py']
+ENVS = [
+    beta,
+    pro,
+    working_notes,
+    working_notes_test,
+    'Custom host defined in fabfile_local.py'
+]
