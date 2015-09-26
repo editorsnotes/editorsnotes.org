@@ -99,12 +99,10 @@ def create_nginx_conf():
         'renderer_port',
     ]
 
-    output_filename = 'nginx/nginx-{host}.ini'.format(**env)
+    output_filename = 'nginx/nginx-{host}.conf'.format(**env)
+    nginx_conf = create_template(template_vars, './nginx/nginx-TEMPLATE.conf.py')
 
-    nginx_conf = create_template(template_vars, './nginx/nginx-TEMPLATE.ini.py')
-
-    with open(output_filename, 'w') as outfile:
-        outfile.write(nginx_conf)
+    write_config('Nginx', output_filename, nginx_conf)
 
 
 @task
@@ -117,12 +115,10 @@ def create_api_service():
     ]
 
     output_filename = 'systemd/{host}.api.service'.format(**env)
-
     api_service = create_template(
         template_vars, './systemd/TEMPLATE.api.service.py')
 
-    with open(output_filename, 'w') as outfile:
-        outfile.write(api_service)
+    write_config('API service', output_filename, api_service)
 
 
 @task
@@ -134,12 +130,10 @@ def create_renderer_service():
     ]
 
     output_filename = 'systemd/{host}.renderer.service'.format(**env)
-
     renderer_service = create_template(
         template_vars, './systemd/TEMPLATE.renderer.service.py')
 
-    with open(output_filename, 'w') as outfile:
-        outfile.write(renderer_service)
+    write_config('Renderer service', output_filename, renderer_service)
 
 
 @task
