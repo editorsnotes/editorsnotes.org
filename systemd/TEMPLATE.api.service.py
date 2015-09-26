@@ -6,9 +6,10 @@ template = """[Unit]
 Description=Editors' Notes uWSGI server for {HOST}
 
 [Service]
-ExecStart=/usr/local/bin/uwsgi \
-        --uid {SOCKET_USER} --gid {SOCKET_GROUP} \
-        --ini {UWSGI_CONF_FILE}
+ExecStart=/usr/local/bin/uwsgi\
+ --uid {SOCKET_USER} --gid {SOCKET_GROUP}\
+ --ini {UWSGI_CONF_FILE}
+
 Restart=always
 Type=notify
 NotifyAccess=all

@@ -2,7 +2,9 @@
 
 import sys
 
-template = """server {
+template = """# vim set filetype=conf
+
+server {{
         #################
         # Configuration #
         #################
@@ -19,40 +21,40 @@ template = """server {
         #    Routes    #
         ################
 
-        location / {
+        location / {{
                 # Rewrite `Host` to this server name
                 proxy_pass_request_headers on;
                 proxy_set_header Host $http_host;
 
                 # If accept HTML, proxy to editorsnotes-renderer
-                if ($http_accept ~* "html") {
+                if ($http_accept ~* "html") {{
                         proxy_pass $en_renderer_http;
                         break;
-                }
+                }}
 
                 # Else, pass to editorsnotes-api
                 include uwsgi_params;
                 uwsgi_pass $en_api_uwsgi;
-        }
+        }}
 
         # Proxy to Django for authentication, regardless of media type
-        location /auth/ {
+        location /auth/ {{
                 proxy_pass_request_headers on;
                 proxy_set_header Host $http_host;
                 include uwsgi_params;
                 uwsgi_pass $en_api_uwsgi;
-        }
+        }}
 
         # Static files
-        location /static/ {
+        location /static/ {{
                 root $project_dir/;
-        }
+        }}
 
         # Image uploads
-        location /media/ {
+        location /media/ {{
                 alias $project_dir/uploads/;
-        }
-}
+        }}
+}}
 """
 
 if __name__ == '__main__':

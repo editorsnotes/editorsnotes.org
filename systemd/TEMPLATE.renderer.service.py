@@ -7,8 +7,8 @@ Description=Editors' Notes renderer node server for {HOST}
 
 [Service]
 ExecStart=\
-        {PROJECT_PATH}/lib/iojs-current/bin/iojs \
-        {PROJECT_PATH}/renderer/releases/current/src/server
+ {PROJECT_PATH}/lib/iojs-current/bin/iojs\
+ {PROJECT_PATH}/renderer/releases/current/src/server
 Restart=always
 
 StandardOutput=syslog
@@ -16,8 +16,8 @@ StandardError=syslog
 SyslogIdentifier={HOST}.renderer
 
 Environment=\
-        "EDITORSNOTES_API_URL=http://{HOST}" \
-        "EDITORSNOTES_CLIENT_PORT={RENDERER_PORT}"
+ "EDITORSNOTES_API_URL=http://{HOST}"\
+ "EDITORSNOTES_CLIENT_PORT={RENDERER_PORT}"
 
 
 
