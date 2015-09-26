@@ -6,9 +6,7 @@ template = """[Unit]
 Description=Editors' Notes renderer node server for {HOST}
 
 [Service]
-ExecStart=\
- {PROJECT_PATH}/lib/iojs-current/bin/iojs\
- {PROJECT_PATH}/renderer/releases/current/src/server
+ExecStart=node {PROJECT_PATH}/renderer/releases/current/src/server
 Restart=always
 
 StandardOutput=syslog

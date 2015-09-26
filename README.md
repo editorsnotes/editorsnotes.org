@@ -7,7 +7,8 @@ In additions to the requirements for [the `editorsnotes` API], the following
 packages are required:
 
   1. nginx
-  2. uwsgi
+  2. uWSGI
+  3. nodejs (and npm)
 
 Before running any commands, you must define two environment variables:
 

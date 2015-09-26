@@ -245,7 +245,6 @@ def full_deploy(api_version='HEAD', renderer_version='HEAD'):
     Deploy the site, migrate the database, and open in a web browser.
     """
     setup()
-    install_iojs()
 
     api.full_deploy(api_version)
     renderer.full_deploy(renderer_version)
@@ -263,20 +262,3 @@ def full_deploy_with_restart(api_version='HEAD', renderer_version='HEAD'):
     local('rmdir --ignore-fail-on-non-empty {TMP_DIR}'.format(**env))
     local('{} http://{}/'.format(
         'xdg-open' if 'linux' in sys.platform else 'open', env.host))
-
-
-@task
-def install_iojs():
-    IOJS_VERSION = 'v2.4.0'
-    PLATFORM = '64' if run('uname -m', quiet=True).endswith('64') else '86'
-    pkg = 'iojs-{}-linux-x{}'.format(IOJS_VERSION, PLATFORM)
-    tarball = 'https://iojs.org/dist/{}/{}.tar.xz'.format(IOJS_VERSION, pkg)
-
-    if exists('{}/lib/{}'.format(env.project_path, pkg)):
-        print 'io.js {} already installed'.format(IOJS_VERSION)
-    else:
-        with cd(os.path.join(env.project_path, 'lib')):
-            run('wget {}'.format(tarball))
-            run('rm -f ./iojs-current')
-            run('tar xJf {0}.tar.xz && rm {0}.tar.xz'.format(pkg))
-            run('ln -fs {} iojs-current'.format(pkg))
