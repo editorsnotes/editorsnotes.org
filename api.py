@@ -1,6 +1,7 @@
 import os
 
 from fabric.api import *
+from fabric.colors import red
 
 from envs import ENVS
 import utils
