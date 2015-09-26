@@ -211,9 +211,10 @@ def restart_all_services():
     sudo('systemctl restart {} nginx.service'.format(' '.join(services)))
 
 def make_uwsgi_run_dir():
-    require('host', provided_by=envs.ENVS)
+    require('host', 'uwsgi_socket_gid', 'uwsgi_socket_uid',
+            provided_by=envs.ENVS)
     sudo('mkdir -p /run/uwsgi')
-    sudo('chown www-data:www-data /run/uwsgi')
+    sudo('chown {uwsgi_socket_gid}:{uwsgi_socket_uid} /run/uwsgi'.format(**env))
 
 def check_file(filename):
     if not os.path.exists(filename):
