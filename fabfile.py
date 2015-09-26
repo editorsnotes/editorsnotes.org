@@ -46,8 +46,11 @@ if not env.git['renderer']:
 #########
 
 @task
-def create_configs():
-    require('hosts', 'project_path', provided_by=envs.ENVS)
+def create_confs():
+    create_uwsgi_conf()
+    create_nginx_conf()
+    create_api_service()
+    create_renderer_service()
 
 def create_template(template_vars, template_script):
     require(*template_vars, provided_by=envs.ENVS)
