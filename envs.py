@@ -17,8 +17,8 @@ def make_basic_conf(hostname):
     env.uwsgi_service_uid = 'ryanshaw'
     env.uwsgi_service_gid = 'ryanshaw'
     env.uwsgi_socket_location = '/run/uwsgi/{}.sock'.format(hostname)
-    env.uwsgi_socket_uid = 'www-data'
-    env.uwsgi_socket_gid = 'www-data'
+    env.uwsgi_socket_uid = 'nginx'
+    env.uwsgi_socket_gid = 'nginx'
     env.uwsgi_socket_chmod = 644
 
     env.nginx_conf_file = '/etc/nginx/conf.d/{}.conf'.format(hostname)
