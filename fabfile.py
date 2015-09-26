@@ -254,10 +254,12 @@ def full_deploy(api_version='HEAD', renderer_version='HEAD'):
     upload_uwsgi_conf()
     install_systemd_services()
 
+@task
+def full_deploy_with_restart(api_version='HEAD', renderer_version='HEAD'):
+    full_deploy(api_version, renderer_version)
     restart_all_services()
 
     time.sleep(2)
-
     local('rmdir --ignore-fail-on-non-empty {TMP_DIR}'.format(**env))
     local('{} http://{}/'.format(
         'xdg-open' if 'linux' in sys.platform else 'open', env.host))
