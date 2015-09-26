@@ -11,12 +11,12 @@ packages are required:
 
 Before running any commands, you must define two environment variables:
 
-  1. `EDITORSNOTES\_GIT`
+  1. `EDITORSNOTES_GIT`
 
      The directory where you keep an `editorsnotes` API git repository
      (i.e. `/Library/patrick/projects/editorsnotes`).
 
-  2. `EDITORSNOTES\_RENDERER\_GIT`
+  2. `EDITORSNOTES_RENDERER_GIT`
 
      The directory where you keep an `editorsnotes-renderer` git repository
      (i.e. `/Library/patrick/projects/editorsnotes-renderer`).
