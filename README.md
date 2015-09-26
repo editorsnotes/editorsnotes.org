@@ -54,8 +54,8 @@ def editorsnotes_local_environment():
     env.uwsgi_service_uid = 'patrick'
     env.uwsgi_service_gid = 'patrick'
     env.uwsgi_socket_location = '/run/uwsgi/editorsnotes.local.sock'
-    env.uwsgi_socket_uid = 'www-data'
-    env.uwsgi_socket_gid = 'www-data'
+    env.uwsgi_socket_uid = 'nginx'
+    env.uwsgi_socket_gid = 'nginx'
     env.uwsgi_socket_chmod = 644
 
     env.nginx_conf_file = '/etc/nginx/conf.d/editorsnotes.local.conf'
