@@ -96,7 +96,7 @@ def create_nginx_conf():
         'renderer_port',
     ]
 
-    output_filename = 'nginx/nginx-{project_name}.ini'.format(**env)
+    output_filename = 'nginx/nginx-{host}.ini'.format(**env)
 
     nginx_conf = create_template(template_vars, './nginx/nginx-TEMPLATE.ini.py')
 
@@ -107,13 +107,13 @@ def create_nginx_conf():
 @task
 def create_api_service():
     template_vars = [
-        'project_name',
+        'host',
         'uwsgi_socket_gid',
         'uwsgi_socket_uid',
         'uwsgi_conf_file',
     ]
 
-    output_filename = 'systemd/{project_name}.api.service'.format(**env)
+    output_filename = 'systemd/{host}.api.service'.format(**env)
 
     api_service = create_template(
         template_vars, './systemd/TEMPLATE.api.service.py')
@@ -125,13 +125,12 @@ def create_api_service():
 @task
 def create_renderer_service():
     template_vars = [
-        'project_name',
-        'project_path',
         'host',
+        'project_path',
         'renderer_port',
     ]
 
-    output_filename = 'systemd/{project_name}.renderer.service'.format(**env)
+    output_filename = 'systemd/{host}.renderer.service'.format(**env)
 
     renderer_service = create_template(
         template_vars, './systemd/TEMPLATE.renderer.service.py')

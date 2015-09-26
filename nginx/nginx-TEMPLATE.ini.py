@@ -1,13 +1,8 @@
 #!/usr/bin/env python
+
 import sys
 
-
-def make_template(**kwargs):
-    template = \
-"""
-# vim set filetype=conf
-
-server {
+template = """server {
         #################
         # Configuration #
         #################
@@ -59,13 +54,11 @@ server {
         }
 }
 """
-    return template.format(kwargs)
 
 if __name__ == '__main__':
-    kwargs = {
+    print template.format(**{
         'HOST': sys.argv[1],
         'PROJECT_PATH': sys.argv[2],
         'UWSGI_SOCKET_LOCATION': sys.argv[3],
         'RENDERER_PORT': sys.argv[4],
-    }
-    print(make_template(**kwargs))
+    })
