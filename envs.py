@@ -14,6 +14,8 @@ def make_basic_conf(hostname):
     env.uwsgi_conf_file = '/etc/uwsgi/sites/{}.ini'.format(hostname)
     env.uwsgi_uid = 'ryanshaw'
     env.uwsgi_gid = 'ryanshaw'
+    env.uwsgi_service_uid = 'ryanshaw'
+    env.uwsgi_service_gid = 'ryanshaw'
     env.uwsgi_socket_location = '/run/uwsgi/{}.sock'.format(hostname)
     env.uwsgi_socket_uid = 'www-data'
     env.uwsgi_socket_gid = 'www-data'
