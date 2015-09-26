@@ -17,7 +17,7 @@ uwsgi/uwsgi-*
 systemd/*
 
 # Templates for generating confs
-!nginx/nginx-TEMPLATE.ini.py
+!nginx/nginx-TEMPLATE.conf.py
 !uwsgi/uwsgi-TEMPLATE.ini.py
 !systemd/TEMPLATE.api.service.py
 !systemd/TEMPLATE.renderer.service.py
