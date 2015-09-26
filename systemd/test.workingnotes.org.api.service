@@ -1,0 +1,12 @@
+[Unit]
+Description=Editors' Notes uWSGI server for test.workingnotes.org
+
+[Service]
+ExecStart=/usr/local/bin/uwsgi --uid ryanshaw --gid ryanshaw --ini /etc/uwsgi/sites/test.workingnotes.org.ini
+
+Restart=always
+Type=notify
+NotifyAccess=all
+
+[Install]
+WantedBy=multi-user.target
