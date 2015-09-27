@@ -16,6 +16,8 @@ StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier={HOST}.markup-renderer
 
+BindsTo={HOST}.target
+
 [Install]
 WantedBy=multi-user.target
 """

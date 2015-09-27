@@ -10,5 +10,7 @@ StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=workingnotes.org.markup-renderer
 
+BindsTo=workingnotes.org.target
+
 [Install]
 WantedBy=multi-user.target

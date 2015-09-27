@@ -14,6 +14,8 @@ Restart=always
 Type=notify
 NotifyAccess=all
 
+BindsTo={HOST}.target
+
 [Install]
 WantedBy=multi-user.target
 """

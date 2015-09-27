@@ -11,7 +11,7 @@ SyslogIdentifier=workingnotes.org.renderer
 
 Environment= "EDITORSNOTES_API_URL=http://workingnotes.org" "EDITORSNOTES_CLIENT_PORT=15025"
 
-
+BindsTo=workingnotes.org.target
 
 [Install]
 WantedBy=multi-user.target

@@ -22,6 +22,7 @@ systemd/*
 !systemd/TEMPLATE.api.service.py
 !systemd/TEMPLATE.renderer.service.py
 !systemd/TEMPLATE.markup-renderer.service.py
+!systemd/TEMPLATE.target.py
 
 # workingnotes.org
 !nginx/nginx-workingnotes.org.conf
@@ -29,6 +30,7 @@ systemd/*
 !systemd/workingnotes.org.api.service
 !systemd/workingnotes.org.renderer.service
 !systemd/workingnotes.org.markup-renderer.service
+!systemd/workingnotes.org.target
 
 # test.workingnotes.org
 !nginx/nginx-test.workingnotes.org.conf
@@ -36,6 +38,7 @@ systemd/*
 !systemd/test.workingnotes.org.api.service
 !systemd/test.workingnotes.org.renderer.service
 !systemd/test.workingnotes.org.markup-renderer.service
+!systemd/test.workingnotes.org.target
 
 # editorsnotes.org
 !nginx/nginx-editorsnotes.org.conf
@@ -43,6 +46,7 @@ systemd/*
 !systemd/editorsnotes.org.api.service
 !systemd/editorsnotes.org.renderer.service
 !systemd/editorsnotes.org.markup-renderer.service
+!systemd/editorsnotes.org.target
 
 # beta.editorsnotes.org
 !nginx/nginx-beta.editorsnotes.org.conf
@@ -50,3 +54,4 @@ systemd/*
 !systemd/beta.editorsnotes.org.api.service
 !systemd/beta.editorsnotes.org.renderer.service
 !systemd/beta.editorsnotes.org.markup-renderer.service
+!systemd/beta.editorsnotes.org.target

@@ -17,7 +17,7 @@ Environment=\
  "EDITORSNOTES_API_URL=http://{HOST}"\
  "EDITORSNOTES_CLIENT_PORT={RENDERER_PORT}"
 
-
+BindsTo={HOST}.target
 
 [Install]
 WantedBy=multi-user.target

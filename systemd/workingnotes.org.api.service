@@ -8,5 +8,7 @@ Restart=always
 Type=notify
 NotifyAccess=all
 
+BindsTo=workingnotes.org.target
+
 [Install]
 WantedBy=multi-user.target

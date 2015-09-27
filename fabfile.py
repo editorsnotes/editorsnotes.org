@@ -53,6 +53,7 @@ def create_confs():
     create_api_service()
     create_renderer_service()
     create_markup_renderer_service()
+    create_systemd_target()
 
 def create_template(template_vars, template_script):
     require(*template_vars, provided_by=envs.ENVS)
@@ -106,6 +107,18 @@ def create_nginx_conf():
 
     write_config('Nginx', output_filename, nginx_conf)
 
+
+@task
+def create_systemd_target():
+    template_vars = [
+        'host'
+    ]
+
+    output_filename = 'systemd/{host}.target'.format(**env)
+    systemd_target = create_template(
+        template_vars, './systemd/TEMPLATE.target.py')
+
+    write_config('Systemd target', output_filename, systemd_target)
 
 @task
 def create_api_service():
@@ -205,30 +218,46 @@ def upload_nginx_conf():
 @task
 def install_systemd_services():
     require('host', 'project_path', provided_by=envs.ENVS)
-    for service in ['api', 'renderer', 'markup-renderer']:
-        service_file = '{}.{}.service'.format(env.host, service)
-        local_conf = 'systemd/{}'.format(service_file)
+
+    units = [
+        'api.service',
+        'renderer.service',
+        'markup-renderer.service',
+        '.target'
+    ]
+
+    for unit in units:
+        unit_file = '{}.{}'.format(env.host, unit)
+        local_conf = 'systemd/{}'.format(unit_file)
         check_file(local_conf)
-        put(local_conf, '{}/conf/{}.tmp'.format(env.project_path, service_file))
+        put(local_conf, '{}/conf/{}.tmp'.format(env.project_path, unit_file))
         with cd(os.path.join(env.project_path, 'conf')):
-            sudo('chown root:root {}.tmp'.format(service_file))
-            sudo('chmod 644 {}.tmp'.format(service_file))
-            sudo('mv -f {0}.tmp /etc/systemd/system/{0}'.format(service_file))
+            sudo('chown root:root {}.tmp'.format(unit_file))
+            sudo('chmod 644 {}.tmp'.format(unit_file))
+            sudo('mv -f {0}.tmp /etc/systemd/system/{0}'.format(unit_file))
+
     make_uwsgi_run_dir()
     sudo('systemctl daemon-reload')
 
 @task
 def remove_systemd_services():
-    for service in ['api', 'renderer']:
-        sudo('rm -f /etc/systemd/system/{}.{}.service'.format(env.host, service))
+    units = [
+        'api.service',
+        'renderer.service',
+        'markup-renderer.service',
+        '.target'
+    ]
+
+    for unit in units:
+        sudo('rm -f /etc/systemd/system/{}.{}'.format(env.host, unit))
+
     sudo('systemctl daemon-reload')
 
 @task
 def restart_all_services():
+    require('host', provided_by=envs.ENVS)
     make_uwsgi_run_dir()
-    services = ['{}.{}.service'.format(env.host, service)
-                for service in ['api', 'renderer']]
-    sudo('systemctl restart {} nginx.service'.format(' '.join(services)))
+    sudo('systemctl restart {}.target nginx.service'.format(env.host))
 
 def make_uwsgi_run_dir():
     require('host', 'uwsgi_socket_gid', 'uwsgi_socket_uid',
