@@ -26,7 +26,7 @@ def make_basic_conf(hostname):
 
     env.nginx_conf_file = '/etc/nginx/conf.d/{}.conf'.format(hostname)
 
-    env.ssl_conf_file = 'workingnotes_ssl.conf'
+    env.ssl_conf_file = '/usr/local/projects/workingnotes_ssl/workingnotes_ssl.conf'
 
 
 @task
