@@ -21,52 +21,52 @@ server {{
 """
 
 template = """
-        #################
-        # Configuration #
-        #################
+    #################
+    # Configuration #
+    #################
 
-        set $project_dir {PROJECT_PATH}/renderer/releases/current;
-        set $en_api_uwsgi unix:{UWSGI_SOCKET_LOCATION};
-        set $en_renderer_http http://{HOST}:{RENDERER_PORT};
+    set $project_dir {PROJECT_PATH}/renderer/releases/current;
+    set $en_api_uwsgi unix:{UWSGI_SOCKET_LOCATION};
+    set $en_renderer_http http://{HOST}:{RENDERER_PORT};
 
 
-        ################
-        #    Routes    #
-        ################
+    ################
+    #    Routes    #
+    ################
 
-        location / {{
-                # Rewrite `Host` to this server name
-                proxy_pass_request_headers on;
-                proxy_set_header Host $http_host;
+    location / {{
+        # Rewrite `Host` to this server name
+        proxy_pass_request_headers on;
+        proxy_set_header Host $http_host;
 
-                # If accept HTML, proxy to editorsnotes-renderer
-                if ($http_accept ~* "html") {{
-                        proxy_pass $en_renderer_http;
-                        break;
-                }}
-
-                # Else, pass to editorsnotes-api
-                include uwsgi_params;
-                uwsgi_pass $en_api_uwsgi;
+        # If accept HTML, proxy to editorsnotes-renderer
+        if ($http_accept ~* "html") {{
+            proxy_pass $en_renderer_http;
+            break;
         }}
 
-        # Proxy to Django for authentication, regardless of media type
-        location /auth/ {{
-                proxy_pass_request_headers on;
-                proxy_set_header Host $http_host;
-                include uwsgi_params;
-                uwsgi_pass $en_api_uwsgi;
-        }}
+        # Else, pass to editorsnotes-api
+        include uwsgi_params;
+        uwsgi_pass $en_api_uwsgi;
+    }}
 
-        # Static files
-        location /static/ {{
-                root $project_dir/;
-        }}
+    # Proxy to Django for authentication, regardless of media type
+    location /auth/ {{
+        proxy_pass_request_headers on;
+        proxy_set_header Host $http_host;
+        include uwsgi_params;
+        uwsgi_pass $en_api_uwsgi;
+    }}
 
-        # Image uploads
-        location /media/ {{
-                alias $project_dir/uploads/;
-        }}
+    # Static files
+    location /static/ {{
+        root $project_dir/;
+    }}
+
+    # Image uploads
+    location /media/ {{
+        alias $project_dir/uploads/;
+    }}
 }}
 """
 
