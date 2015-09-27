@@ -7,7 +7,7 @@ Description=Editors' Notes markup renderer node server for {HOST}
 
 [Service]
 ExecStart={NODE_BIN}\
- {PROJECT_PATH}/markup-renderer/node_modules/.bin/editorsnotes_renderer\
+ {PROJECT_PATH}/markup_renderer/node_modules/.bin/editorsnotes_renderer\
  --port={MARKUP_RENDERER_PORT}
 
 Restart=always

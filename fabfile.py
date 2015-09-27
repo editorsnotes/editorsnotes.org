@@ -231,7 +231,7 @@ def install_systemd_services():
         'api.service',
         'renderer.service',
         'markup-renderer.service',
-        '.target'
+        'target'
     ]
 
     for unit in units:
@@ -254,7 +254,7 @@ def remove_systemd_services():
         'api.service',
         'renderer.service',
         'markup-renderer.service',
-        '.target'
+        'target'
     ]
 
     for unit in units:
