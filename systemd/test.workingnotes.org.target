@@ -1,5 +1,5 @@
 [Unit]
 Description=test.workingnotes.org site
-Requires=test.workingnotes.org.api.service test.workingnotes.org.renderer.service test.workingnotes.org.markup_renderer.service
+Requires=test.workingnotes.org.api.service test.workingnotes.org.renderer.service test.workingnotes.org.markup-renderer.service
 
 After=multi-user.target

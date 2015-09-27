@@ -2,7 +2,7 @@
 Description=Editors' Notes markup renderer node server for test.workingnotes.org
 
 [Service]
-ExecStart=/usr/bin/node /usr/local/projects/test.workingnotes.org/markup-renderer/node_modules/.bin/editorsnotes_renderer --port=15024
+ExecStart=/usr/bin/node /usr/local/projects/test.workingnotes.org/markup_renderer/node_modules/.bin/editorsnotes_renderer --port=15024
 
 Restart=always
 

@@ -6,7 +6,7 @@ template = """[Unit]
 Description={HOST} site
 Requires={HOST}.api.service\
  {HOST}.renderer.service\
- {HOST}.markup_renderer.service
+ {HOST}.markup-renderer.service
 
 After=multi-user.target
 """
