@@ -109,6 +109,7 @@ def create_nginx_conf():
 def create_api_service():
     template_vars = [
         'host',
+        'uwsgi_bin',
         'uwsgi_service_gid',
         'uwsgi_service_uid',
         'uwsgi_conf_file',

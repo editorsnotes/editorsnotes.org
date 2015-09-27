@@ -2,7 +2,7 @@
 Description=Editors' Notes uWSGI server for workingnotes.org
 
 [Service]
-ExecStart=/usr/local/bin/uwsgi --uid ryanshaw --gid ryanshaw --ini /etc/uwsgi/sites/workingnotes.org.ini
+ExecStart=/usr/sbin/uwsgi --uid ryanshaw --gid ryanshaw --ini /etc/uwsgi/sites/workingnotes.org.ini
 
 Restart=always
 Type=notify

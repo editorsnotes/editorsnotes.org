@@ -11,6 +11,7 @@ def make_basic_conf(hostname):
     env.project_path = '/usr/local/projects/{}'.format(hostname)
     env.python = '/usr/bin/python2.7'
 
+    env.uwsgi_bin = '/usr/sbin/uwsgi'
     env.uwsgi_conf_file = '/etc/uwsgi/sites/{}.ini'.format(hostname)
     env.uwsgi_uid = 'ryanshaw'
     env.uwsgi_gid = 'ryanshaw'
