@@ -27,7 +27,7 @@ template = """
 
     set $project_dir {PROJECT_PATH}/renderer/releases/current;
     set $en_api_uwsgi unix:{UWSGI_SOCKET_LOCATION};
-    set $en_renderer_http http://{HOST}:{RENDERER_PORT};
+    set $en_renderer_http http://127.0.0.1:{RENDERER_PORT};
 
 
     ################
