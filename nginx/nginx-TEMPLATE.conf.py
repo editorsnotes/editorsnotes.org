@@ -17,7 +17,7 @@ server {{
     listen 443 ssl;
     server_name {HOST};
 
-    include {SSL_CONF_FILE}
+    include {SSL_CONF_FILE};
 """
 
 template = """
