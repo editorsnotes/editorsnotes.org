@@ -1,5 +1,6 @@
 [Unit]
 Description=Editors' Notes uWSGI server for workingnotes.org
+BindsTo=workingnotes.org.target
 
 [Service]
 ExecStart=/usr/sbin/uwsgi --uid ryanshaw --gid ryanshaw --ini /etc/uwsgi/sites/workingnotes.org.ini
@@ -7,8 +8,6 @@ ExecStart=/usr/sbin/uwsgi --uid ryanshaw --gid ryanshaw --ini /etc/uwsgi/sites/w
 Restart=always
 Type=notify
 NotifyAccess=all
-
-BindsTo=workingnotes.org.target
 
 [Install]
 WantedBy=multi-user.target

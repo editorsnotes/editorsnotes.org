@@ -4,6 +4,7 @@ import sys
 
 template = """[Unit]
 Description=Editors' Notes renderer node server for {HOST}
+BindsTo={HOST}.target
 
 [Service]
 ExecStart={NODE_BIN} {PROJECT_PATH}/renderer/releases/current/src/server
@@ -16,8 +17,6 @@ SyslogIdentifier={HOST}.renderer
 Environment=\
  "EDITORSNOTES_API_URL=http://{HOST}"\
  "EDITORSNOTES_CLIENT_PORT={RENDERER_PORT}"
-
-BindsTo={HOST}.target
 
 [Install]
 WantedBy=multi-user.target

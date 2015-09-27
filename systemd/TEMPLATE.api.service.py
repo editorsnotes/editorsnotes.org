@@ -4,6 +4,7 @@ import sys
 
 template = """[Unit]
 Description=Editors' Notes uWSGI server for {HOST}
+BindsTo={HOST}.target
 
 [Service]
 ExecStart={UWSGI_BIN}\
@@ -13,8 +14,6 @@ ExecStart={UWSGI_BIN}\
 Restart=always
 Type=notify
 NotifyAccess=all
-
-BindsTo={HOST}.target
 
 [Install]
 WantedBy=multi-user.target

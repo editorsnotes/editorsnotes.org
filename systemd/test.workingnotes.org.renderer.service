@@ -1,5 +1,6 @@
 [Unit]
 Description=Editors' Notes renderer node server for test.workingnotes.org
+BindsTo=test.workingnotes.org.target
 
 [Service]
 ExecStart=/usr/bin/node /usr/local/projects/test.workingnotes.org/renderer/releases/current/src/server
@@ -10,8 +11,6 @@ StandardError=syslog
 SyslogIdentifier=test.workingnotes.org.renderer
 
 Environment= "EDITORSNOTES_API_URL=http://test.workingnotes.org" "EDITORSNOTES_CLIENT_PORT=15023"
-
-BindsTo=test.workingnotes.org.target
 
 [Install]
 WantedBy=multi-user.target

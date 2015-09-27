@@ -4,6 +4,7 @@ import sys
 
 template = """[Unit]
 Description=Editors' Notes markup renderer node server for {HOST}
+BindsTo={HOST}.target
 
 [Service]
 ExecStart={NODE_BIN}\
@@ -15,8 +16,6 @@ Restart=always
 StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier={HOST}.markup-renderer
-
-BindsTo={HOST}.target
 
 [Install]
 WantedBy=multi-user.target

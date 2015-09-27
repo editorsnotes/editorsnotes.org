@@ -1,5 +1,6 @@
 [Unit]
 Description=Editors' Notes markup renderer node server for test.workingnotes.org
+BindsTo=test.workingnotes.org.target
 
 [Service]
 ExecStart=/usr/bin/node /usr/local/projects/test.workingnotes.org/markup_renderer/node_modules/.bin/editorsnotes_renderer --port=15024
@@ -9,8 +10,6 @@ Restart=always
 StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=test.workingnotes.org.markup-renderer
-
-BindsTo=test.workingnotes.org.target
 
 [Install]
 WantedBy=multi-user.target
