@@ -6,7 +6,7 @@ template = """[Unit]
 Description=Editors' Notes renderer node server for {HOST}
 
 [Service]
-ExecStart=node {PROJECT_PATH}/renderer/releases/current/src/server
+ExecStart={NODE_BIN} {PROJECT_PATH}/renderer/releases/current/src/server
 Restart=always
 
 StandardOutput=syslog
@@ -26,6 +26,7 @@ WantedBy=multi-user.target
 if __name__ == '__main__':
     print template.format(**{
         'HOST': sys.argv[1],
-        'PROJECT_PATH': sys.argv[2],
-        'RENDERER_PORT': sys.argv[3],
+        'NODE_BIN': sys.argv[2],
+        'PROJECT_PATH': sys.argv[3],
+        'RENDERER_PORT': sys.argv[4],
     })

@@ -126,6 +126,7 @@ def create_api_service():
 def create_renderer_service():
     template_vars = [
         'host',
+        'node_bin',
         'project_path',
         'renderer_port',
     ]
