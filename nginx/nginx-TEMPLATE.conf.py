@@ -5,7 +5,7 @@ import sys
 template_head = """# vim set filetype=conf
 
 server {{
-    listen 80:
+    listen 80;
     server_name {HOST};
 """
 
