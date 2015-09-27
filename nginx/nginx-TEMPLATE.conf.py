@@ -2,15 +2,28 @@
 
 import sys
 
-template = """# vim set filetype=conf
+template_head = """# vim set filetype=conf
 
 server {{
+    listen 80:
+    server_name {HOST};
+"""
+
+ssl_template_head = """
+    return 301 https://$server_name$request_uri;
+}}
+
+server {{
+    listen 443 ssl;
+    server_name {HOST};
+
+    include {SSL_CONF_FILE}
+"""
+
+template = """
         #################
         # Configuration #
         #################
-
-        listen 80;
-        server_name {HOST};
 
         set $project_dir {PROJECT_PATH}/renderer/releases/current;
         set $en_api_uwsgi unix:{UWSGI_SOCKET_LOCATION};
@@ -58,9 +71,18 @@ server {{
 """
 
 if __name__ == '__main__':
-    print template.format(**{
+    template_dict = {
         'HOST': sys.argv[1],
         'PROJECT_PATH': sys.argv[2],
         'UWSGI_SOCKET_LOCATION': sys.argv[3],
         'RENDERER_PORT': sys.argv[4],
-    })
+    }
+    template_start = template_head.format(**template_dict)
+
+    try:
+        template_dict['SSL_CONF_FILE'] = sys.argv[5]
+        template_start += ssl_template_head.format(**template_dict)
+    except IndexError:
+        pass
+
+    print template_start + template.format(**template_dict)

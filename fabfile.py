@@ -103,6 +103,7 @@ def create_nginx_conf():
         'project_path',
         'uwsgi_socket_location',
         'renderer_port',
+        'ssl_conf_file'
     ]
 
     output_filename = 'nginx/nginx-{host}.conf'.format(**env)
