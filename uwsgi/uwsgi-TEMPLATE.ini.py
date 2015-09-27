@@ -3,6 +3,8 @@
 import sys
 
 template = """[uwsgi]
+plugins = python
+
 chdir = {ROOT_DIR}/api/releases/current
 virtualenv = {ROOT_DIR}/api/venv
 module = wsgi:application
