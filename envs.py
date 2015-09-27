@@ -31,13 +31,15 @@ def working_notes_test():
     hostname = 'test.workingnotes.org'
     make_basic_conf(hostname)
     env.renderer_port = 15023
+    env.markup_renderer_port = 15024
 
 @task
 def working_notes():
     "Use the testing Working Notes host."
     hostname = 'workingnotes.org'
     make_basic_conf(hostname)
-    env.renderer_port = 15024
+    env.renderer_port = 15025
+    env.markup_renderer_port = 15026
 
 @task
 def beta():

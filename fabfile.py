@@ -14,6 +14,7 @@ import time
 import envs
 import api
 import renderer
+import markup_renderer
 import maintenance
 
 
@@ -51,6 +52,7 @@ def create_confs():
     create_nginx_conf()
     create_api_service()
     create_renderer_service()
+    create_markup_renderer_service()
 
 def create_template(template_vars, template_script):
     require(*template_vars, provided_by=envs.ENVS)
@@ -139,6 +141,22 @@ def create_renderer_service():
 
 
 @task
+def create_markup_renderer_service():
+    template_vars = [
+        'host',
+        'node_bin',
+        'project_path',
+        'markup_renderer_port',
+    ]
+
+    output_filename = 'systemd/{host}.markup-renderer.service'.format(**env)
+    renderer_service = create_template(
+        template_vars, './systemd/TEMPLATE.markup-renderer.service.py')
+
+    write_config('Markup renderer service', output_filename, renderer_service)
+
+
+@task
 def setup():
     """
     Setup all project directories.
@@ -150,7 +168,7 @@ def setup():
                   'Create it on the server before continuing.'.format(**env)))
 
     with cd(env.project_path):
-        run('mkdir -p api renderer lib conf')
+        run('mkdir -p api renderer lib conf markup_renderer')
         run('mkdir -p api/static api/uploads')
 
         make_release_folders('api')
@@ -187,7 +205,7 @@ def upload_nginx_conf():
 @task
 def install_systemd_services():
     require('host', 'project_path', provided_by=envs.ENVS)
-    for service in ['api', 'renderer']:
+    for service in ['api', 'renderer', 'markup-renderer']:
         service_file = '{}.{}.service'.format(env.host, service)
         local_conf = 'systemd/{}'.format(service_file)
         check_file(local_conf)
@@ -243,7 +261,8 @@ def make_release_folders(dirname):
 
 
 @task
-def full_deploy(api_version='HEAD', renderer_version='HEAD'):
+def full_deploy(api_version='HEAD', renderer_version='HEAD',
+                markup_renderer_version=None):
     """
     Deploy the site, migrate the database, and open in a web browser.
     """
@@ -251,13 +270,15 @@ def full_deploy(api_version='HEAD', renderer_version='HEAD'):
 
     api.full_deploy(api_version)
     renderer.full_deploy(renderer_version)
+    markup_renderer.full_deploy(markup_renderer_version)
 
     upload_nginx_conf()
     upload_uwsgi_conf()
     install_systemd_services()
 
 @task
-def full_deploy_with_restart(api_version='HEAD', renderer_version='HEAD'):
+def full_deploy_with_restart(api_version='HEAD', renderer_version='HEAD',
+                             markup_renderer_version=None):
     full_deploy(api_version, renderer_version)
     restart_all_services()
 
