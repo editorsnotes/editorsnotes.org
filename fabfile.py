@@ -186,7 +186,7 @@ def setup():
                   'Create it on the server before continuing.'.format(**env)))
 
     with cd(env.project_path):
-        run('mkdir -p api renderer lib conf markup_renderer')
+        run('mkdir -p api renderer conf markup_renderer')
         run('mkdir -p api/static api/uploads')
 
         make_release_folders('api')
