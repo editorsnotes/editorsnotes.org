@@ -4,13 +4,13 @@ from fabric.contrib.console import confirm
 
 from envs import ENVS
 
+
 def confirm_subproject(subproject):
-    if not subproject in env.git:
+    if subproject not in env.git:
         abort(red(
             'No such project: {}.\n\nKnown projects are: {}'.format(
                 project, env.git.keys().join(','))
         ))
-
 
 
 def symlink_current_release(project):
@@ -50,13 +50,15 @@ def upload_release(project, version='HEAD'):
     local('mkdir -p {}'.format(env.TMP_DIR))
     upload_tar_from_git(project, git_dir, version)
 
+
 def ensure_branch_exists(branch, git_dir):
     with lcd(git_dir):
         with warn_only():
             show_ref = local('git show-ref --heads --tags {}'.format(branch),
                              capture=True)
     if not show_ref:
-        abort(red('Could not find local head or tag `{}` in git repository {}. '
+        abort(red('Could not find local head or tag `{}` '
+                  'in git repository {}. '
                   'Do you need to fetch it first?'.format(branch, git_dir)))
 
 
@@ -71,6 +73,7 @@ def upload_tar_from_git(project, git_dir, version):
         subdir=project, **env))
     put('{TMP_DIR}/{release}.tar.gz'.format(**env),
         '{project_path}/{subdir}/packages/'.format(subdir=project, **env))
-    with cd('{project_path}/{subdir}/releases/{release}'.format(subdir=project, **env)):
+    with cd('{project_path}/{subdir}/releases/{release}'.format(subdir=project,
+                                                                **env)):
         run('tar zxf ../../packages/{release}.tar.gz'.format(**env))
     local('rm {TMP_DIR}/{release}.tar.gz'.format(**env))

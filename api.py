@@ -31,7 +31,8 @@ def install_deps():
 def make_virtual_env():
     with cd(env.project_path):
         with cd('api'):
-            run('virtualenv -p {python} --no-site-packages ./venv/'.format(**env))
+            run('virtualenv -p {python} --no-site-packages ./venv/'.format(
+                **env))
 
 
 @task
@@ -67,8 +68,8 @@ def migrate():
 
 def install_wsgi():
     "Install the wsgi file for the current release"
-    put('django.wsgi', '{project_path}/api/releases/current/wsgi.py'.format(**env))
-
+    put('django.wsgi', '{project_path}/api/releases/current/wsgi.py'.format(
+        **env))
 
 
 def upload_local_settings():

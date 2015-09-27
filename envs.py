@@ -4,6 +4,7 @@ Deployment environments
 
 from fabric.api import env, task
 
+
 def make_basic_conf(hostname):
     "Add the basic env values for our server"
     env.hosts = [hostname]
@@ -25,6 +26,7 @@ def make_basic_conf(hostname):
 
     env.nginx_conf_file = '/etc/nginx/conf.d/{}.conf'.format(hostname)
 
+
 @task
 def working_notes_test():
     "Use the main Working Notes host."
@@ -33,6 +35,7 @@ def working_notes_test():
     env.renderer_port = 15023
     env.markup_renderer_port = 15024
 
+
 @task
 def working_notes():
     "Use the testing Working Notes host."
@@ -40,6 +43,7 @@ def working_notes():
     make_basic_conf(hostname)
     env.renderer_port = 15025
     env.markup_renderer_port = 15026
+
 
 @task
 def beta():

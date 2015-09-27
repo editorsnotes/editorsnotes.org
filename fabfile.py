@@ -15,7 +15,6 @@ import envs
 import api
 import renderer
 import markup_renderer
-import maintenance
 
 
 ####################
@@ -55,6 +54,7 @@ def create_confs():
     create_markup_renderer_service()
     create_systemd_target()
 
+
 def create_template(template_vars, template_script):
     require(*template_vars, provided_by=envs.ENVS)
     template_string = ' '.join(['{' + var + '}' for var in template_vars])
@@ -75,6 +75,8 @@ def write_config(conf_type, filename, content):
 
     with open(filename, 'w') as outfile:
         outfile.write(content)
+
+
 @task
 def create_uwsgi_conf():
     template_vars = [
@@ -88,7 +90,8 @@ def create_uwsgi_conf():
     ]
 
     output_filename = 'uwsgi/uwsgi-{host}.ini'.format(**env)
-    uwsgi_conf = create_template(template_vars, './uwsgi/uwsgi-TEMPLATE.ini.py')
+    uwsgi_conf = create_template(
+        template_vars, './uwsgi/uwsgi-TEMPLATE.ini.py')
 
     write_config('uWSGI', output_filename, uwsgi_conf)
 
@@ -103,7 +106,8 @@ def create_nginx_conf():
     ]
 
     output_filename = 'nginx/nginx-{host}.conf'.format(**env)
-    nginx_conf = create_template(template_vars, './nginx/nginx-TEMPLATE.conf.py')
+    nginx_conf = create_template(
+        template_vars, './nginx/nginx-TEMPLATE.conf.py')
 
     write_config('Nginx', output_filename, nginx_conf)
 
@@ -119,6 +123,7 @@ def create_systemd_target():
         template_vars, './systemd/TEMPLATE.target.py')
 
     write_config('Systemd target', output_filename, systemd_target)
+
 
 @task
 def create_api_service():
@@ -202,6 +207,7 @@ def upload_uwsgi_conf():
         sudo('mv -f conf/uwsgi.ini.tmp {uwsgi_conf_file}'
              .format(**env), pty=True)
 
+
 @task
 def upload_nginx_conf():
     require('nginx_conf_file', 'host', provided_by=envs.ENVS)
@@ -213,7 +219,9 @@ def upload_nginx_conf():
     with cd(env.project_path):
         sudo('chown root:root conf/nginx.conf.tmp')
         sudo('chmod 644 conf/nginx.conf.tmp')
-        sudo('mv -f conf/nginx.conf.tmp {nginx_conf_file}'.format(**env), pty=True)
+        sudo('mv -f conf/nginx.conf.tmp {nginx_conf_file}'.format(**env),
+             pty=True)
+
 
 @task
 def install_systemd_services():
@@ -239,6 +247,7 @@ def install_systemd_services():
     make_uwsgi_run_dir()
     sudo('systemctl daemon-reload')
 
+
 @task
 def remove_systemd_services():
     units = [
@@ -253,17 +262,21 @@ def remove_systemd_services():
 
     sudo('systemctl daemon-reload')
 
+
 @task
 def restart_all_services():
     require('host', provided_by=envs.ENVS)
     make_uwsgi_run_dir()
     sudo('systemctl restart {}.target nginx.service'.format(env.host))
 
+
 def make_uwsgi_run_dir():
     require('host', 'uwsgi_socket_gid', 'uwsgi_socket_uid',
             provided_by=envs.ENVS)
     sudo('mkdir -p /run/uwsgi')
-    sudo('chown {uwsgi_socket_gid}:{uwsgi_socket_uid} /run/uwsgi'.format(**env))
+    sudo('chown {uwsgi_socket_gid}:{uwsgi_socket_uid} /run/uwsgi'.format(
+        **env))
+
 
 def check_file(filename):
     if not os.path.exists(filename):
@@ -304,6 +317,7 @@ def full_deploy(api_version='HEAD', renderer_version='HEAD',
     upload_nginx_conf()
     upload_uwsgi_conf()
     install_systemd_services()
+
 
 @task
 def full_deploy_with_restart(api_version='HEAD', renderer_version='HEAD',
