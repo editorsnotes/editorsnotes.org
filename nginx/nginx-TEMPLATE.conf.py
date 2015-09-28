@@ -25,7 +25,7 @@ template = """
     # Configuration #
     #################
 
-    set $project_dir {PROJECT_PATH}/renderer/releases/current;
+    set $project_dir {PROJECT_PATH};
     set $en_api_uwsgi unix:{UWSGI_SOCKET_LOCATION};
     set $en_renderer_http http://127.0.0.1:{RENDERER_PORT};
 
@@ -60,7 +60,12 @@ template = """
 
     # Static files
     location /static/ {{
-        root $project_dir/;
+        root $project_dir/renderer/releses/current/;
+    }}
+
+    # Static file for authentication page
+    location /static/admin_compiled.css {{
+        root $project_dir;
     }}
 
     # Image uploads
