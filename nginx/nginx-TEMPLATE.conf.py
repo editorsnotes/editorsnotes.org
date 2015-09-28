@@ -60,7 +60,7 @@ template = """
 
     # Static files
     location /static/ {{
-        root $project_dir/renderer/releses/current/;
+        root $project_dir/renderer/releases/current/;
     }}
 
     # Static file for authentication page
