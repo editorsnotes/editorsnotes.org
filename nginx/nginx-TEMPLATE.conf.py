@@ -43,7 +43,20 @@ template = """
         proxy_pass_request_headers on;
         proxy_set_header Host $http_host;
 
-        # If accept HTML, proxy to editorsnotes-renderer
+        # Pass type-specific suffixes (except HTML) to editorsnotes-api
+        location ~* \.(json|jsonld|ttl|api)$ {{
+            include uwsgi_params;
+            uwsgi_pass $en_api_uwsgi;
+        }}
+
+        # If suffix is HTML, pass to editorsnotes-renderer
+        location ~* \.html$ {{
+            rewrite ^(/.+)\.html$ $1/ break;
+            proxy_pass $en_renderer_http;
+            break;
+        }}
+
+        # If request accepts HTML, pass to editorsnotes-renderer
         if ($http_accept ~* "html") {{
             proxy_pass $en_renderer_http;
             break;
@@ -69,6 +82,11 @@ template = """
 
     # Static file for authentication page
     location /static/admin_compiled.css {{
+        root $project_dir;
+    }}
+
+    # Static files for Django REST framework
+    location /static/rest_framework/ {{
         root $project_dir;
     }}
 
