@@ -44,7 +44,7 @@ template = """
         proxy_set_header Host $http_host;
 
         # Pass type-specific suffixes (except HTML) to editorsnotes-api
-        location ~* \.(json|jsonld|ttl|api)$ {{
+        location ~* \.(json|jsonld|jsonld-browse|ttl|ttl-browse)$ {{
             include uwsgi_params;
             uwsgi_pass $en_api_uwsgi;
         }}
