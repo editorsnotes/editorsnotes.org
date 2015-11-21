@@ -19,9 +19,9 @@ server {{
 
     include {SSL_CONF_FILE};
 
-    if ($host != {HOST}) {
+    if ($host != {HOST}) {{
         return 444;
-    }
+    }}
 """
 
 template = """
