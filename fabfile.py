@@ -76,6 +76,10 @@ def write_config(conf_type, filename, content):
     with open(filename, 'w') as outfile:
         outfile.write(content)
 
+@task
+def show_logs():
+    sudo('journalctl -xe --unit={}.*'.format(env.host))
+
 
 @task
 def create_uwsgi_conf():
