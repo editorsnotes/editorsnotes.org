@@ -14,7 +14,7 @@ def make_basic_conf(hostname):
     env.node_bin = '/usr/bin/node'
 
     env.uwsgi_bin = '/usr/sbin/uwsgi'
-    env.uwsgi_conf_file = '/etc/uwsgi/sites/{}.ini'.format(hostname)
+    env.uwsgi_conf_file = '/etc/uwsgi.d/{}.ini'.format(hostname)
     env.uwsgi_uid = 'ryanshaw'
     env.uwsgi_gid = 'ryanshaw'
     env.uwsgi_service_uid = 'ryanshaw'
