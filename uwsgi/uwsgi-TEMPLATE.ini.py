@@ -16,7 +16,7 @@ uid = {UWSGI_UID}
 gid = {UWSGI_GID}
 
 socket = /run/uwsgi/{HOST}.sock
-chown-socket = {SOCKET_GID}:{SOCKET_UID}
+#chown-socket = {SOCKET_GID}:{SOCKET_UID}
 chmod-socket = {SOCKET_CHMOD}
 
 vacuum = true
