@@ -204,7 +204,7 @@ def upload_uwsgi_conf():
     put(uwsgi_file, '{project_path}/conf/uwsgi.ini.tmp'.format(**env))
     with cd(env.project_path):
         sudo('chmod 644 conf/uwsgi.ini.tmp')
-        sudo('chown root:root conf/uwsgi.ini.tmp')
+        sudo('chown uwsgi:uwsgi conf/uwsgi.ini.tmp')
         sudo('mv -f conf/uwsgi.ini.tmp {uwsgi_conf_file}'
              .format(**env), pty=True)
 
