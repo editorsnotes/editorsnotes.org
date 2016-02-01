@@ -16,7 +16,7 @@ def upload_release(version='HEAD'):
 def install_deps():
     require('hosts', 'project_path', provided_by=ENVS)
     with cd(os.path.join(env.project_path, 'renderer', 'releases', 'current')):
-        run('npm --cache-min 999999 install')
+        run('npm install')
 
 
 @task
