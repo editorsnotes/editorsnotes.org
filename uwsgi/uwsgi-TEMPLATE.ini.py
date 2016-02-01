@@ -14,6 +14,8 @@ processes = 1
 
 # uid = {UWSGI_UID}
 # gid = {UWSGI_GID}
+uid = nginx
+gid = nginx
 
 socket = /run/uwsgi/{HOST}.sock
 # chown-socket = {SOCKET_GID}:{SOCKET_UID}

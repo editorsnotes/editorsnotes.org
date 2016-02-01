@@ -3,7 +3,7 @@ Description=Editors' Notes uWSGI server for test.workingnotes.org
 BindsTo=test.workingnotes.org.target
 
 [Service]
-ExecStart=/usr/sbin/uwsgi --uid ryanshaw --gid ryanshaw --ini /etc/uwsgi/sites/test.workingnotes.org.ini
+ExecStart=/usr/sbin/uwsgi --uid ryanshaw --gid ryanshaw --ini /etc/uwsgi.d/test.workingnotes.org.ini
 
 Restart=always
 Type=notify

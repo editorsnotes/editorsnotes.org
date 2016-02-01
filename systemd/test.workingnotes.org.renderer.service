@@ -10,7 +10,7 @@ StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=test.workingnotes.org.renderer
 
-Environment= "EDITORSNOTES_API_URL=http://test.workingnotes.org" "EDITORSNOTES_CLIENT_PORT=15023"
+Environment= "EDITORSNOTES_API_URL=http://test.workingnotes.org" "EDITORSNOTES_RENDERER_PORT=15023" "NODE_ENV=production"
 
 [Install]
 WantedBy=multi-user.target

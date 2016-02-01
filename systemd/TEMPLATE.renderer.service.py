@@ -16,7 +16,8 @@ SyslogIdentifier={HOST}.renderer
 
 Environment=\
  "EDITORSNOTES_API_URL=http://{HOST}"\
- "EDITORSNOTES_CLIENT_PORT={RENDERER_PORT}"
+ "EDITORSNOTES_RENDERER_PORT={RENDERER_PORT}"\
+ "NODE_ENV=production"
 
 [Install]
 WantedBy=multi-user.target
