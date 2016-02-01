@@ -3,7 +3,7 @@ Description=Editors' Notes renderer node server for test.workingnotes.org
 BindsTo=test.workingnotes.org.target
 
 [Service]
-ExecStart=/usr/bin/node /usr/local/projects/test.workingnotes.org/renderer/releases/current/src/server
+ExecStart=/usr/bin/node /usr/local/projects/test.workingnotes.org/renderer/releases/current/bin/serve.js
 Restart=always
 
 StandardOutput=syslog

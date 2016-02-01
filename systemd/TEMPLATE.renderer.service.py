@@ -7,7 +7,7 @@ Description=Editors' Notes renderer node server for {HOST}
 BindsTo={HOST}.target
 
 [Service]
-ExecStart={NODE_BIN} {PROJECT_PATH}/renderer/releases/current/src/server
+ExecStart={NODE_BIN} {PROJECT_PATH}/renderer/releases/current/bin/serve.js
 Restart=always
 
 StandardOutput=syslog
