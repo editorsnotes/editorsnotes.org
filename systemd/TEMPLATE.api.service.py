@@ -7,6 +7,8 @@ Description=Editors' Notes uWSGI server for {HOST}
 BindsTo={HOST}.target
 
 [Service]
+ExecStartPre=/bin/mkdir -p /run/uwsgi
+ExecStartPre=/bin/chown nginx:nginx /run/uwsgi
 ExecStart={UWSGI_BIN}\
  --uid {UWSGI_SERVICE_USER} --gid {UWSGI_SERVICE_GROUP}\
  --ini {UWSGI_CONF_FILE}
