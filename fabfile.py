@@ -137,6 +137,8 @@ def create_api_service():
         'uwsgi_bin',
         'uwsgi_service_gid',
         'uwsgi_service_uid',
+        'uwsgi_socket_uid',
+        'uwsgi_socket_uid',
         'uwsgi_conf_file',
     ]
 

@@ -8,7 +8,11 @@ Requires={HOST}.api.service\
  {HOST}.renderer.service\
  {HOST}.markup-renderer.service
 
-After=multi-user.target
+Requires=nginx.service
+Requires=postgresql.service
+
+[Install]
+RequiredBy=multi-user.target
 """
 
 if __name__ == '__main__':

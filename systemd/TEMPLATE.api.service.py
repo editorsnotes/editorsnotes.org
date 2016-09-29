@@ -7,8 +7,10 @@ Description=Editors' Notes uWSGI server for {HOST}
 BindsTo={HOST}.target
 
 [Service]
-ExecStartPre=/bin/mkdir -p /run/uwsgi
-ExecStartPre=/bin/chown nginx:nginx /run/uwsgi
+User={UWSGI_SOCKET_USER}
+Group={UWSGI_SOCKET_GROUP}
+RuntimeDirectory=uwsgi
+
 ExecStart={UWSGI_BIN}\
  --uid {UWSGI_SERVICE_USER} --gid {UWSGI_SERVICE_GROUP}\
  --ini {UWSGI_CONF_FILE}
@@ -27,5 +29,7 @@ if __name__ == '__main__':
         'UWSGI_BIN': sys.argv[2],
         'UWSGI_SERVICE_GROUP': sys.argv[3],
         'UWSGI_SERVICE_USER': sys.argv[4],
-        'UWSGI_CONF_FILE': sys.argv[5],
+        'UWSGI_SOCKET_GROUP': sys.argv[5],
+        'UWSGI_SOCKET_USER': sys.argv[6],
+        'UWSGI_CONF_FILE': sys.argv[7],
     })

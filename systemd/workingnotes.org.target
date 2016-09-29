@@ -2,4 +2,8 @@
 Description=workingnotes.org site
 Requires=workingnotes.org.api.service workingnotes.org.renderer.service workingnotes.org.markup-renderer.service
 
-After=multi-user.target
+Requires=nginx.service
+Requires=postgresql.service
+
+[Install]
+RequiredBy=multi-user.target
