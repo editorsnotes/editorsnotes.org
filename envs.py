@@ -10,7 +10,7 @@ def make_basic_conf(hostname):
     env.hosts = [hostname]
 
     env.project_path = '/usr/local/projects/{}'.format(hostname)
-    env.python = '/usr/bin/python2.7'
+    env.python = '/usr/bin/python3'
     env.node_bin = '/usr/bin/node'
 
     env.uwsgi_bin = '/usr/sbin/uwsgi'
