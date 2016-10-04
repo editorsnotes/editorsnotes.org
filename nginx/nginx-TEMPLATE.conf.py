@@ -94,6 +94,12 @@ template = """
     location /media/ {{
         alias $project_dir/uploads/;
     }}
+
+    # Let's Encrypt challenges
+    # (Obtain a cert with `certbot certonly --webroot -w /usr/share/nginx/html -d {HOST}
+    location /.well-known/acme-challenge/ {{
+        root /usr/share/nginx/html/;
+    }}
 }}
 """
 
